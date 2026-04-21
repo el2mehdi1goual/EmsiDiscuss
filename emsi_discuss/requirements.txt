@@ -2,8 +2,8 @@
 # Django Framework
 Django==4.2.0
 
-# Base de données MySQL
-mysqlclient==2.2.0
+# Base de données MySQL (PyMySQL - plus facile à installer que mysqlclient)
+PyMySQL==1.1.0
 
 # Outils de développement
 django-extensions==3.2.3

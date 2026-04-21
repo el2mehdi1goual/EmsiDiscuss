@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import pymysql
+
+# Configure PyMySQL comme driver MySQL
+pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -74,17 +78,26 @@ TEMPLATES = [
 WSGI_APPLICATION = 'emsi_discuss.wsgi.application'
 
 
-# Database configuration for MySQL
+# Database configuration for MySQL / SQLite
 # Assurez-vous que MySQL est installé et que la base de données 'emsi_discuss_db' existe
 
+# Option 1: MySQL (Production)
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'emsi_discuss_db',
+#         'USER': 'root',
+#         'PASSWORD': '',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#     }
+# }
+
+# Option 2: SQLite (Développement/Test - Plus facile)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'emsi_discuss_db',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
