@@ -1,0 +1,21 @@
+# Requirements pour EMSI_Discuss
+# Django Framework
+Django==4.2.0
+
+# Base de données MySQL
+mysqlclient==2.2.0
+
+# Outils de développement
+django-extensions==3.2.3
+
+# Variables d'environnement
+python-dotenv==1.0.0
+
+# API REST (pour développement futur)
+djangorestframework==3.14.0
+
+# CORS (pour développement futur)
+django-cors-headers==4.0.0
+
+# Format JSON (pour développement futur)
+django-filter==23.2

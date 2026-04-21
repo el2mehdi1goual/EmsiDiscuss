@@ -1,0 +1,32 @@
+# 👋 Bienvenue sur EMSI_Discuss!
+
+Votre projet Django est prêt! 
+
+## 🎯 3 Actions Rapides
+
+### 1️⃣ Lire le Guide de Démarrage
+📄 **[00_COMMENCER_ICI.md](./00_COMMENCER_ICI.md)** (5 min)
+
+### 2️⃣ Installer et Configurer
+📄 **[COMMANDES_TERMINAL.md](./COMMANDES_TERMINAL.md)** (15 min)
+
+### 3️⃣ Lancer le Serveur
+```bash
+cd emsi_discuss
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+## 🌐 Accéder à l'Application
+- **Accueil:** http://127.0.0.1:8000/
+- **Admin:** http://127.0.0.1:8000/admin/
+
+## 📚 Plus de Documentation
+📖 **[INDEX.md](./INDEX.md)** - Navigation complète
+
+---
+
+**C'est tout! Prêt à commencer? 🚀**

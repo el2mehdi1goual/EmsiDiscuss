@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Accueil - EMSI_Discuss{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-md-12">
+        <div class="jumbotron bg-light p-5 rounded">
+            <h1 class="display-4">{{ project_name }}</h1>
+            <p class="lead">{{ description }}</p>
+            <hr class="my-4">
+            <p class="alert alert-success">
+                <strong>✓ {{ status }}</strong>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Modules Section -->
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4">Modules du Projet</h2>
+    </div>
+</div>
+
+<div class="row">
+    {% for module in modules %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ module.name }}</h5>
+                <p class="card-text">{{ module.description }}</p>
+            </div>
+            <div class="card-footer bg-white">
+                <a href="{{ module.url }}" class="btn btn-sm btn-primary">Voir plus</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Information Section -->
+<div class="row mt-5">
+    <div class="col-md-12">
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">À propos du projet</h4>
+            <p>
+                <strong>EMSI_Discuss</strong> est un forum de discussion académique destiné aux étudiants de l'EMSI.
+                Le projet est actuellement en phase d'initialisation avec la mise en place de la structure de base.
+            </p>
+            <hr>
+            <p class="mb-0">
+                <strong>Technologie utilisée :</strong> Django | MySQL | Bootstrap 5
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Development Status -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Statut du Développement</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <span class="badge bg-success">✓</span> Structure du projet initialisée
+                    </li>
+                    <li class="list-group-item">
+                        <span class="badge bg-success">✓</span> Applications créées (Accounts, Forum, Votes, Moderation, Notifications)
+                    </li>
+                    <li class="list-group-item">
+                        <span class="badge bg-success">✓</span> Configuration de la base de données MySQL
+                    </li>
+                    <li class="list-group-item">
+                        <span class="badge bg-success">✓</span> Page d'accueil
+                    </li>
+                    <li class="list-group-item">
+                        <span class="badge bg-warning">⏳</span> Développement des fonctionnalités en cours
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
