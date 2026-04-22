@@ -11,7 +11,7 @@ class UserProfile(models.Model):
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True)
+    avatar = models.URLField(blank=True, help_text='URL de l\'image d\'avatar')
     is_banned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
