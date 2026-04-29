@@ -2,23 +2,43 @@
 Modèles pour l'application Accounts
 """
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 
 
-class UserProfile(models.Model):
+class Badge(models.Model):
     """
-    Profil utilisateur étendu
+    Badge utilisateur
     """
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.TextField(blank=True)
-    avatar = models.URLField(blank=True, help_text='URL de l\'image d\'avatar')
-    is_banned = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    condition = models.CharField(max_length=200)
 
     class Meta:
-        verbose_name = 'Profil utilisateur'
-        verbose_name_plural = 'Profils utilisateur'
+        verbose_name = 'Badge'
+        verbose_name_plural = 'Badges'
 
     def __str__(self):
-        return f"Profil de {self.user.username}"
+        return self.name
+
+
+class User(AbstractUser):
+    """
+    Modèle utilisateur personnalisé correspondant au diagramme UML
+    """
+    avatar = models.URLField(blank=True, help_text="URL de l'image d'avatar")
+    bio = models.TextField(blank=True)
+    signature = models.TextField(blank=True)
+    filiere = models.CharField(max_length=100, blank=True)
+    promotion = models.CharField(max_length=50, blank=True)
+    reputation = models.IntegerField(default=0)
+    role = models.CharField(max_length=50, default='student')
+    is_banned = models.BooleanField(default=False)
+    banned_until = models.DateTimeField(null=True, blank=True)
+    badges = models.ManyToManyField(Badge, blank=True, related_name='users')
+
+    class Meta:
+        verbose_name = 'Utilisateur'
+        verbose_name_plural = 'Utilisateurs'
+
+    def __str__(self):
+        return self.username

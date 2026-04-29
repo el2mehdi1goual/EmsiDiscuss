@@ -2,15 +2,19 @@
 Administration pour l'application Accounts
 """
 from django.contrib import admin
-from .models import UserProfile
+from django.contrib.auth.admin import UserAdmin
+from .models import User, Badge
 
+@admin.register(Badge)
+class BadgeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'condition')
+    search_fields = ('name',)
 
-@admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
-    """
-    Administrateur pour le modèle UserProfile
-    """
-    list_display = ('user', 'is_banned', 'created_at')
-    list_filter = ('is_banned', 'created_at')
-    search_fields = ('user__username', 'user__email')
-    readonly_fields = ('created_at', 'updated_at')
+@admin.register(User)
+class CustomUserAdmin(UserAdmin):
+    list_display = ('username', 'email', 'role', 'reputation', 'is_banned')
+    list_filter = ('role', 'is_banned', 'is_staff', 'is_superuser')
+    search_fields = ('username', 'email', 'filiere')
+    fieldsets = UserAdmin.fieldsets + (
+        ('Informations supplémentaires', {'fields': ('avatar', 'bio', 'signature', 'filiere', 'promotion', 'reputation', 'role', 'is_banned', 'banned_until', 'badges')}),
+    )

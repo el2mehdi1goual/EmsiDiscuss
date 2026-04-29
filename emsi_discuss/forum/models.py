@@ -2,7 +2,7 @@
 Modèles pour l'application Forum
 """
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 
 
 class Category(models.Model):
@@ -11,7 +11,7 @@ class Category(models.Model):
     """
     name = models.CharField(max_length=100)
     description = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    slug = models.SlugField(unique=True)
 
     class Meta:
         verbose_name = 'Catégorie'
@@ -29,7 +29,7 @@ class SubCategory(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')
     name = models.CharField(max_length=100)
     description = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    slug = models.SlugField(unique=True)
 
     class Meta:
         verbose_name = 'Sous-catégorie'
@@ -40,17 +40,35 @@ class SubCategory(models.Model):
         return f"{self.category.name} > {self.name}"
 
 
+class Tag(models.Model):
+    """
+    Tags pour les sujets
+    """
+    name = models.CharField(max_length=50)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = 'Tag'
+        verbose_name_plural = 'Tags'
+
+    def __str__(self):
+        return self.name
+
+
 class Topic(models.Model):
     """
     Sujet/fil de discussion
     """
     subcategory = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name='topics')
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='topics')
     title = models.CharField(max_length=200)
     content = models.TextField()
-    views_count = models.IntegerField(default=0)
+    is_anonymous = models.BooleanField(default=False)
+    is_solved = models.BooleanField(default=False)
     is_locked = models.BooleanField(default=False)
     is_pinned = models.BooleanField(default=False)
+    tags = models.ManyToManyField(Tag, blank=True, related_name='topics')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -68,9 +86,10 @@ class Reply(models.Model):
     Réponse à un sujet
     """
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='replies')
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='replies')
     content = models.TextField()
     is_best_answer = models.BooleanField(default=False)
+    is_hidden = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -80,4 +99,4 @@ class Reply(models.Model):
         ordering = ['created_at']
 
     def __str__(self):
-        return f"Réponse de {self.author} sur {self.topic.title}"
+        return f"Réponse sur {self.topic.title}"
