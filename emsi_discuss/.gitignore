@@ -61,6 +61,3 @@ npm-debug.log
 # PyCharm
 .idea/
 *.iml
-
-# VS Code
-.vscode/
