@@ -2,87 +2,378 @@
 
 {% block title %}Accueil - EMSI_Discuss{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Topic Card Styles */
+    .topic-card {
+        background: var(--surface-color);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1.2rem;
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+        border: 1px solid #F3F4F6;
+    }
+    
+    .topic-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+    
+    .avatar-placeholder {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #10B981, #008A45);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: white;
+        font-family: 'Montserrat', sans-serif;
+    }
+    
+    .avatar-2 { background: linear-gradient(135deg, #6366F1, #4F46E5); }
+    .avatar-3 { background: linear-gradient(135deg, #F59E0B, #D97706); }
+    
+    .topic-meta-top {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+    
+    .user-name {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+    
+    .topic-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0.8rem 0 0.5rem 0;
+        color: var(--text-dark);
+        line-height: 1.3;
+    }
+    
+    .topic-snippet {
+        font-size: 0.95rem;
+        margin-bottom: 1.2rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+    }
+    
+    .tag-pill {
+        background-color: #F3F4F6;
+        color: var(--text-dark);
+        border-radius: 20px;
+        padding: 0.25rem 0.8rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-right: 0.4rem;
+        text-decoration: none;
+        transition: background-color 0.2s;
+    }
+    
+    .tag-pill:hover {
+        background-color: #E5E7EB;
+        color: var(--text-dark);
+    }
+    
+    .badge-resolved {
+        border: 1px solid var(--primary-green);
+        color: var(--primary-green);
+        background: rgba(0, 138, 69, 0.05);
+        padding: 0.25rem 0.6rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    
+    .topic-footer {
+        border-top: 1px solid #F3F4F6;
+        padding-top: 1rem;
+        margin-top: 1rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .footer-stat {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-weight: 500;
+    }
+
+    /* Widget Styles */
+    .widget-card {
+        background: var(--surface-color);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid #F3F4F6;
+    }
+    
+    .widget-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 1.2rem;
+        color: var(--text-dark);
+        border-bottom: 2px solid var(--primary-green);
+        display: inline-block;
+        padding-bottom: 0.4rem;
+    }
+    
+    .pinned-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .pinned-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid #F3F4F6;
+        text-decoration: none;
+        color: var(--text-dark);
+        transition: color 0.2s;
+    }
+    
+    .pinned-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .pinned-item:hover {
+        color: var(--primary-green);
+    }
+    
+    .pinned-icon {
+        color: var(--primary-green);
+        margin-top: 0.2rem;
+    }
+    
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    
+    .stat-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary-green);
+        font-family: 'Montserrat', sans-serif;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row mb-5">
-    <div class="col-md-12">
-        <div class="jumbotron bg-light p-5 rounded">
-            <h1 class="display-4">{{ project_name }}</h1>
-            <p class="lead">{{ description }}</p>
-            <hr class="my-4">
-            <p class="alert alert-success">
-                <strong>✓ {{ status }}</strong>
-            </p>
-        </div>
-    </div>
-</div>
-
-<!-- Modules Section -->
 <div class="row">
-    <div class="col-md-12">
-        <h2 class="mb-4">Modules du Projet</h2>
-    </div>
-</div>
-
-<div class="row">
-    {% for module in modules %}
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">{{ module.name }}</h5>
-                <p class="card-text">{{ module.description }}</p>
-            </div>
-            <div class="card-footer bg-white">
-                <a href="{{ module.url }}" class="btn btn-sm btn-primary">Voir plus</a>
-            </div>
+    <!-- Left Column (70%) -->
+    <div class="col-lg-8 pe-lg-4">
+        
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3 fw-bold mb-0 text-dark">Dernières Discussions</h2>
+            <select class="form-select w-auto border-0 bg-white shadow-sm" style="color: var(--text-muted); font-weight: 500;">
+                <option selected>Filtrer par: Plus récent</option>
+                <option value="1">Plus votés</option>
+                <option value="2">Sans réponse</option>
+            </select>
         </div>
-    </div>
-    {% endfor %}
-</div>
 
-<!-- Information Section -->
-<div class="row mt-5">
-    <div class="col-md-12">
-        <div class="alert alert-info" role="alert">
-            <h4 class="alert-heading">À propos du projet</h4>
-            <p>
-                <strong>EMSI_Discuss</strong> est un forum de discussion académique destiné aux étudiants de l'EMSI.
-                Le projet est actuellement en phase d'initialisation avec la mise en place de la structure de base.
+        <!-- Topic Card 1 -->
+        <article class="topic-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-placeholder">YA</div>
+                    <div class="topic-meta-top">
+                        <span class="user-name">Youssef Alaoui</span> • il y a 2 heures
+                    </div>
+                </div>
+                <div class="badge-resolved">
+                    <i class="bi bi-check-circle-fill"></i> Résolu
+                </div>
+            </div>
+            
+            <h3 class="topic-title">Comment optimiser une requête complexe en SQLAlchemy ?</h3>
+            <p class="topic-snippet">
+                Bonjour à tous, je travaille sur le projet de fin d'année et j'ai une requête avec plusieurs jointures qui ralentit énormément mon application Flask. Avez-vous des astuces pour...
             </p>
-            <hr>
-            <p class="mb-0">
-                <strong>Technologie utilisée :</strong> Django | MySQL | Bootstrap 5
-            </p>
-        </div>
-    </div>
-</div>
+            
+            <div class="mb-3">
+                <a href="#" class="tag-pill">Python</a>
+                <a href="#" class="tag-pill">Base de données</a>
+                <a href="#" class="tag-pill">Optimisation</a>
+            </div>
+            
+            <div class="topic-footer">
+                <div class="footer-stat" style="color: var(--primary-green);">
+                    <i class="bi bi-arrow-up-circle-fill"></i> 42 Votes
+                </div>
+                <div class="footer-stat">
+                    <i class="bi bi-chat-text"></i> 8 Réponses
+                </div>
+                <div class="footer-stat">
+                    <i class="bi bi-eye"></i> 156 Vues
+                </div>
+            </div>
+        </article>
 
-<!-- Development Status -->
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card border-info">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">Statut du Développement</h5>
+        <!-- Topic Card 2 -->
+        <article class="topic-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-placeholder avatar-2">SB</div>
+                    <div class="topic-meta-top">
+                        <span class="user-name">Sara Benali</span> • il y a 5 heures
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        <span class="badge bg-success">✓</span> Structure du projet initialisée
-                    </li>
-                    <li class="list-group-item">
-                        <span class="badge bg-success">✓</span> Applications créées (Accounts, Forum, Votes, Moderation, Notifications)
-                    </li>
-                    <li class="list-group-item">
-                        <span class="badge bg-success">✓</span> Configuration de la base de données MySQL
-                    </li>
-                    <li class="list-group-item">
-                        <span class="badge bg-success">✓</span> Page d'accueil
-                    </li>
-                    <li class="list-group-item">
-                        <span class="badge bg-warning">⏳</span> Développement des fonctionnalités en cours
-                    </li>
-                </ul>
+            
+            <h3 class="topic-title">Problème de segmentation fault en C++ (Pointeurs)</h3>
+            <p class="topic-snippet">
+                Salut ! J'essaie d'implémenter une liste chaînée pour le TP de structure de données, mais j'obtiens systématiquement une erreur de segmentation lors de la suppression du dernier élément. Voici mon code...
+            </p>
+            
+            <div class="mb-3">
+                <a href="#" class="tag-pill">C++</a>
+                <a href="#" class="tag-pill">Algorithmique</a>
+            </div>
+            
+            <div class="topic-footer">
+                <div class="footer-stat">
+                    <i class="bi bi-arrow-up-circle"></i> 15 Votes
+                </div>
+                <div class="footer-stat">
+                    <i class="bi bi-chat-text"></i> 3 Réponses
+                </div>
+                <div class="footer-stat">
+                    <i class="bi bi-eye"></i> 89 Vues
+                </div>
+            </div>
+        </article>
+
+        <!-- Topic Card 3 -->
+        <article class="topic-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-placeholder avatar-3">MR</div>
+                    <div class="topic-meta-top">
+                        <span class="user-name">Mehdi Rachid</span> • hier
+                    </div>
+                </div>
+            </div>
+            
+            <h3 class="topic-title">Avis sur les frameworks Front-end pour PFA (React vs Vue)</h3>
+            <p class="topic-snippet">
+                Notre équipe hésite entre React et Vue.js pour notre PFA. Sachant que nous avons une API Django en back-end et que nous n'avons que 2 mois, quel serait le meilleur choix d'apprentissage ?
+            </p>
+            
+            <div class="mb-3">
+                <a href="#" class="tag-pill">JavaScript</a>
+                <a href="#" class="tag-pill">React</a>
+                <a href="#" class="tag-pill">Vue.js</a>
+                <a href="#" class="tag-pill">PFA</a>
+            </div>
+            
+            <div class="topic-footer">
+                <div class="footer-stat">
+                    <i class="bi bi-arrow-up-circle"></i> 56 Votes
+                </div>
+                <div class="footer-stat">
+                    <i class="bi bi-chat-text"></i> 24 Réponses
+                </div>
+                <div class="footer-stat">
+                    <i class="bi bi-eye"></i> 342 Vues
+                </div>
+            </div>
+        </article>
+
+    </div>
+
+    <!-- Right Column (30%) -->
+    <div class="col-lg-4 mt-4 mt-lg-0">
+        
+        <!-- Widget 1: Sujets Épinglés -->
+        <div class="widget-card">
+            <h4 class="widget-title">Sujets Épinglés</h4>
+            <ul class="pinned-list">
+                <li>
+                    <a href="#" class="pinned-item">
+                        <i class="bi bi-pin-angle-fill pinned-icon"></i>
+                        <div>
+                            <span class="fw-bold d-block">Dates de soutenance PFA 2024</span>
+                            <small class="text-muted">Par l'Administration</small>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="pinned-item">
+                        <i class="bi bi-pin-angle-fill pinned-icon"></i>
+                        <div>
+                            <span class="fw-bold d-block">Règles du forum à lire absolument</span>
+                            <small class="text-muted">Par Modérateur</small>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="pinned-item">
+                        <i class="bi bi-pin-angle-fill pinned-icon"></i>
+                        <div>
+                            <span class="fw-bold d-block">Hackathon EMSI - Inscriptions ouvertes !</span>
+                            <small class="text-muted">Par BDE EMSI</small>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Widget 2: Nos Chiffres Clés -->
+        <div class="widget-card">
+            <h4 class="widget-title">Nos Chiffres Clés</h4>
+            
+            <div class="stat-row">
+                <span class="stat-label"><i class="bi bi-people-fill me-2 text-muted"></i>Étudiants Inscrits</span>
+                <span class="stat-number">+1200</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label"><i class="bi bi-chat-square-text-fill me-2 text-muted"></i>Discussions</span>
+                <span class="stat-number">458</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label"><i class="bi bi-check-circle-fill me-2 text-muted"></i>Sujets Résolus</span>
+                <span class="stat-number">312</span>
+            </div>
+            
+            <div class="mt-4 pt-3 border-top text-center">
+                <span class="badge bg-light text-dark border p-2 w-100 fs-6">
+                    🏆 N°1 Forum EMSI
+                </span>
             </div>
         </div>
+
     </div>
 </div>
 {% endblock %}
