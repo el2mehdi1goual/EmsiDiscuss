@@ -2,43 +2,42 @@
 Modèles pour l'application Accounts
 """
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import User
 
 
-class Badge(models.Model):
+ROLE_CHOICES = [
+    ('user', 'Utilisateur'),
+    ('moderator', 'Modérateur'),
+    ('admin', 'Administrateur'),
+]
+
+
+class Profile(models.Model):
     """
-    Badge utilisateur
+    Profil utilisateur lié en OneToOne avec le modèle User natif de Django
     """
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    condition = models.CharField(max_length=200)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, help_text="Avatar de l'utilisateur")
+    bio = models.TextField(blank=True, max_length=500, help_text="Biographie courte")
+    signature = models.CharField(max_length=255, blank=True, help_text="Signature de l'utilisateur")
+    filiere = models.CharField(max_length=100, blank=True, help_text="Filière d'études")
+    promotion = models.CharField(max_length=50, blank=True, help_text="Année de promotion")
+    reputation = models.IntegerField(default=0, help_text="Points de réputation")
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user', help_text="Rôle utilisateur")
+    is_banned = models.BooleanField(default=False, help_text="Utilisateur banni?")
+    banned_until = models.DateTimeField(null=True, blank=True, help_text="Date de fin du bannissement")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = 'Badge'
-        verbose_name_plural = 'Badges'
+        verbose_name = 'Profil'
+        verbose_name_plural = 'Profils'
 
     def __str__(self):
-        return self.name
+        return f"Profil de {self.user.username}"
 
-
-class User(AbstractUser):
-    """
-    Modèle utilisateur personnalisé correspondant au diagramme UML
-    """
-    avatar = models.URLField(blank=True, help_text="URL de l'image d'avatar")
-    bio = models.TextField(blank=True)
-    signature = models.TextField(blank=True)
-    filiere = models.CharField(max_length=100, blank=True)
-    promotion = models.CharField(max_length=50, blank=True)
-    reputation = models.IntegerField(default=0)
-    role = models.CharField(max_length=50, default='student')
-    is_banned = models.BooleanField(default=False)
-    banned_until = models.DateTimeField(null=True, blank=True)
-    badges = models.ManyToManyField(Badge, blank=True, related_name='users')
-
-    class Meta:
-        verbose_name = 'Utilisateur'
-        verbose_name_plural = 'Utilisateurs'
-
-    def __str__(self):
-        return self.username
+    def get_avatar_url(self):
+        """Retourne l'URL de l'avatar ou une image par défaut"""
+        if self.avatar:
+            return self.avatar.url
+        return '/static/images/default-avatar.png'

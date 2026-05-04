@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profil de {{ profile_user.username }} - EMSI_Discuss{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Informations principales -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <!-- Avatar -->
+                    <img src="{{ profile.get_avatar_url }}" alt="Avatar de {{ profile_user.username }}" 
+                         class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                    
+                    <h4>{{ profile_user.get_full_name|default:profile_user.username }}</h4>
+                    <p class="text-muted mb-2">@{{ profile_user.username }}</p>
+
+                    <!-- Badge rôle -->
+                    <div class="mb-3">
+                        {% if profile.role == 'admin' %}
+                            <span class="badge bg-danger">Administrateur</span>
+                        {% elif profile.role == 'moderator' %}
+                            <span class="badge bg-warning">Modérateur</span>
+                        {% else %}
+                            <span class="badge bg-info">Utilisateur</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Statut bannissement -->
+                    {% if profile.is_banned %}
+                        <div class="alert alert-danger py-2">
+                            <i class="bi bi-exclamation-circle"></i> Compte banni
+                            {% if profile.banned_until %}
+                                <br><small>Jusqu'au {{ profile.banned_until|date:"d/m/Y H:i" }}</small>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Bouton modification -->
+                    {% if is_own_profile %}
+                        <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary-custom w-100 mb-2">
+                            <i class="bi bi-pencil"></i> Modifier mon profil
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-3">Statistiques</h6>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <h5 class="text-primary">{{ profile.reputation }}</h5>
+                                <small class="text-muted">Réputation</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <h5 class="text-primary">{{ profile_user.forum_posts.count|default:0 }}</h5>
+                                <small class="text-muted">Publications</small>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <small class="text-muted">Inscrit depuis le {{ profile_user.date_joined|date:"d/m/Y" }}</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Détails du profil -->
+        <div class="col-md-8">
+            <!-- Biographie -->
+            {% if profile.bio %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">À propos</h5>
+                        <p class="card-text">{{ profile.bio|linebreaks }}</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Informations académiques et contact -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Informations</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Email:</strong><br>
+                            <a href="mailto:{{ profile_user.email }}">{{ profile_user.email }}</a>
+                        </div>
+                        {% if profile.filiere %}
+                            <div class="col-md-6 mb-3">
+                                <strong>Filière:</strong><br>
+                                {{ profile.filiere }}
+                            </div>
+                        {% endif %}
+                        {% if profile.promotion %}
+                            <div class="col-md-6 mb-3">
+                                <strong>Promotion/Année:</strong><br>
+                                {{ profile.promotion }}
+                            </div>
+                        {% endif %}
+                        {% if profile.signature %}
+                            <div class="col-md-6 mb-3">
+                                <strong>Signature:</strong><br>
+                                {{ profile.signature }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Autres informations -->
+            {% if profile.role != 'user' or profile_user.is_staff or profile_user.is_superuser %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Permissions</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if profile.role == 'moderator' %}
+                                <span class="badge bg-warning">Modération activée</span>
+                            {% endif %}
+                            {% if profile.role == 'admin' %}
+                                <span class="badge bg-danger">Administration activée</span>
+                            {% endif %}
+                            {% if profile_user.is_staff %}
+                                <span class="badge bg-secondary">Staff</span>
+                            {% endif %}
+                            {% if profile_user.is_superuser %}
+                                <span class="badge bg-dark">Superuser</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Activité récente (optionnel) -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Activité récente</h5>
+                    <p class="text-muted">
+                        <small>Dernière connexion: {{ profile_user.last_login|default:"Jamais"|date:"d/m/Y H:i" }}</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

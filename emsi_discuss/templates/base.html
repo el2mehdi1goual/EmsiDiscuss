@@ -128,8 +128,24 @@
                 </form>
                 
                 <!-- Actions -->
-                <div class="d-flex align-items-center ms-auto mt-3 mt-lg-0">
-                    <a href="{% url 'accounts:home' %}" class="btn btn-primary-custom">Connexion / S'inscrire</a>
+                <div class="d-flex align-items-center ms-auto mt-3 mt-lg-0 gap-2">
+                    {% if user.is_authenticated %}
+                        <!-- Utilisateur connecté -->
+                        <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-person"></i> Mon Profil
+                        </a>
+                        <a href="{% url 'accounts:logout' %}" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </a>
+                    {% else %}
+                        <!-- Utilisateur non connecté -->
+                        <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-person-plus"></i> S'inscrire
+                        </a>
+                        <a href="{% url 'accounts:login' %}" class="btn btn-primary-custom btn-sm">
+                            <i class="bi bi-box-arrow-in-right"></i> Connexion
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

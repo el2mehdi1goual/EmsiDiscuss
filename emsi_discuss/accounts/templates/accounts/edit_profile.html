@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier mon profil - EMSI_Discuss{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="card-title mb-4">Modifier mon profil</h2>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Informations personnelles</h5>
+
+                                <div class="mb-3">
+                                    <label for="{{ user_form.email.id_for_label }}" class="form-label">Email</label>
+                                    {{ user_form.email }}
+                                    {% if user_form.email.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ user_form.email.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ user_form.first_name.id_for_label }}" class="form-label">Prénom</label>
+                                        {{ user_form.first_name }}
+                                        {% if user_form.first_name.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ user_form.first_name.errors.0 }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ user_form.last_name.id_for_label }}" class="form-label">Nom</label>
+                                        {{ user_form.last_name }}
+                                        {% if user_form.last_name.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ user_form.last_name.errors.0 }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Avatar</h5>
+
+                                <!-- Aperçu avatar -->
+                                {% if profile_form.instance.avatar %}
+                                    <div class="mb-3 text-center">
+                                        <img src="{{ profile_form.instance.avatar.url }}" alt="Avatar actuel" 
+                                             class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                                        <p class="text-muted small mt-2">Avatar actuel</p>
+                                    </div>
+                                {% else %}
+                                    <div class="mb-3 text-center">
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" 
+                                             style="width: 100px; height: 100px; margin: 0 auto;">
+                                            <i class="bi bi-person" style="font-size: 2rem; color: #ccc;"></i>
+                                        </div>
+                                        <p class="text-muted small mt-2">Pas d'avatar</p>
+                                    </div>
+                                {% endif %}
+
+                                <div class="mb-3">
+                                    <label for="{{ profile_form.avatar.id_for_label }}" class="form-label">Changer l'avatar</label>
+                                    {{ profile_form.avatar }}
+                                    <small class="text-muted d-block mt-1">Formats acceptés: JPG, PNG, GIF (max 5MB)</small>
+                                    {% if profile_form.avatar.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ profile_form.avatar.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="mb-3">Informations académiques</h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.filiere.id_for_label }}" class="form-label">Filière</label>
+                                {{ profile_form.filiere }}
+                                {% if profile_form.filiere.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profile_form.filiere.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.promotion.id_for_label }}" class="form-label">Promotion/Année</label>
+                                {{ profile_form.promotion }}
+                                {% if profile_form.promotion.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profile_form.promotion.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="mb-3">À propos de vous</h5>
+
+                        <div class="mb-3">
+                            <label for="{{ profile_form.bio.id_for_label }}" class="form-label">Biographie</label>
+                            {{ profile_form.bio }}
+                            <small class="text-muted d-block mt-1">Parlez un peu de vous (500 caractères maximum)</small>
+                            {% if profile_form.bio.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ profile_form.bio.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ profile_form.signature.id_for_label }}" class="form-label">Signature</label>
+                            {{ profile_form.signature }}
+                            <small class="text-muted d-block mt-1">Signature à afficher dans vos publications</small>
+                            {% if profile_form.signature.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ profile_form.signature.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Boutons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary-custom">
+                                <i class="bi bi-check-lg"></i> Enregistrer les modifications
+                            </button>
+                            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
