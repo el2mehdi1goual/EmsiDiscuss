@@ -82,7 +82,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'emsi_discuss_db',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': 'mehdi',
         'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
