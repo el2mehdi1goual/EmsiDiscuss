@@ -18,14 +18,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from . import views
+from forum import views as forum_views
 
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
     
-    # Page d'accueil
-    path('', views.home, name='home'),
+    # Page d'accueil - Affiche directement la liste des topics
+    path('', forum_views.topic_list, name='home'),
+    
     
     # Applications
     path('accounts/', include('accounts.urls')),

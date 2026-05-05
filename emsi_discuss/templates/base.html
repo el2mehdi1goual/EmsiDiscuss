@@ -122,9 +122,9 @@
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <!-- Search -->
-                <form class="d-flex mx-auto my-3 my-lg-0 search-container">
+                <form method="get" action="{% url 'home' %}" class="d-flex mx-auto my-3 my-lg-0 search-container">
                     <i class="bi bi-search search-icon"></i>
-                    <input class="form-control search-bar" type="search" placeholder="Rechercher une discussion, un tag..." aria-label="Search">
+                    <input class="form-control search-bar" type="search" name="search" placeholder="Rechercher #django, #python..." aria-label="Search">
                 </form>
                 
                 <!-- Navigation Links -->

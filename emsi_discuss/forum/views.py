@@ -74,6 +74,7 @@ def topic_list(request):
     """
     Vue pour lister tous les sujets avec filtres
     Filtres disponibles : catégorie, sous-catégorie, tag, statut
+    Recherche : titre, contenu, ou tags (avec ou sans #)
     """
     topics = Topic.objects.select_related('author', 'subcategory__category').prefetch_related('tags')
     
@@ -82,7 +83,7 @@ def topic_list(request):
     subcategory_id = request.GET.get('subcategory')
     tag_id = request.GET.get('tag')
     status_filter = request.GET.get('status')
-    search = request.GET.get('search')
+    search = request.GET.get('search', '').strip()
 
     # Appliquer les filtres
     if category_id:
@@ -102,12 +103,18 @@ def topic_list(request):
     elif status_filter == 'open':
         topics = topics.filter(is_solved=False, is_locked=False)
     
-    # Recherche texte
+    # Recherche texte (titre, contenu, ou tags)
     if search:
+        # Nettoyer la recherche (enlever # si présent)
+        search_clean = search.lstrip('#').lower()
+        
+        # Chercher dans titre, contenu, ou tags
+        from django.db.models import Q
         topics = topics.filter(
             Q(title__icontains=search) | 
-            Q(content__icontains=search)
-        )
+            Q(content__icontains=search) |
+            Q(tags__name__iexact=search_clean)
+        ).distinct()
     
     # Récupérer les filtres pour l'affichage
     categories = Category.objects.all()
