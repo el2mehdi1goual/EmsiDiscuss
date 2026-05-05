@@ -1,16 +1,18 @@
 """
 Vues pour l'application Forum
 Gestion des sujets du forum : CRUD complet avec filtres
+Gestion des réponses et votes
 """
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 from django.utils.text import slugify
+from django.db import transaction
 
-from .models import Category, SubCategory, Topic, Tag
+from .models import Category, SubCategory, Topic, Tag, Reply
 from .forms import TopicCreateForm, TopicUpdateForm
 
 
@@ -53,6 +55,25 @@ def get_or_create_tags(tag_names_list):
             tags.append(tag)
     
     return tags
+
+
+def get_subcategories_by_category(request, category_id):
+    """
+    API endpoint pour récupérer les sous-catégories d'une catégorie
+    Retourne JSON avec liste des sous-catégories
+    """
+    try:
+        category = get_object_or_404(Category, id=category_id)
+        subcategories = category.subcategories.values('id', 'name').order_by('name')
+        return JsonResponse({
+            'success': True,
+            'subcategories': list(subcategories)
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)
 
 
 def forum_home(request):
@@ -138,18 +159,29 @@ def topic_list(request):
 
 def topic_detail(request, topic_id):
     """
-    Vue pour afficher le détail d'un sujet
+    Vue pour afficher le détail d'un sujet avec ses réponses
     Incrémente le nombre de vues
     """
     topic = get_object_or_404(Topic, id=topic_id)
+    replies = topic.replies.filter(is_hidden=False).select_related('author').prefetch_related('votes', 'quotes')
     
     # Incrémenter les vues (sauf si c'est l'auteur)
     if request.user != topic.author:
         topic.increment_views()
     
+    # Calculer les votes pour chaque réponse
+    for reply in replies:
+        reply.vote_score = sum([v.value for v in reply.votes.all()])
+        reply.user_vote = reply.votes.filter(user=request.user).first() if request.user.is_authenticated else None
+    
+    # Calculer les votes du topic
+    topic.vote_score = sum([v.value for v in topic.votes.all()])
+    topic.user_vote = topic.votes.filter(user=request.user).first() if request.user.is_authenticated else None
+    
     context = {
         'page_title': f'{topic.title} - Forum',
         'topic': topic,
+        'replies': replies,
         'category': topic.get_category(),
     }
     return render(request, 'forum/topic_detail.html', context)
@@ -168,15 +200,27 @@ def topic_create(request):
         if form.is_valid():
             # Récupérer la catégorie sélectionnée
             category = form.cleaned_data.get('category')
-            subcategory_name = form.cleaned_data.get('subcategory_name')
+            subcategory = form.cleaned_data.get('subcategory')
+            new_subcategory_name = form.cleaned_data.get('new_subcategory_name', '').strip()
             tag_names_str = form.cleaned_data.get('tag_names', '')
             
-            # Créer ou récupérer la sous-catégorie
-            subcategory, created = SubCategory.objects.get_or_create(
-                category=category,
-                name=subcategory_name,
-                defaults={'slug': slugify(subcategory_name)}
-            )
+            # Déterminer la sous-catégorie à utiliser
+            if new_subcategory_name:
+                # Créer une nouvelle sous-catégorie
+                from django.utils.text import slugify
+                subcategory, created = SubCategory.objects.get_or_create(
+                    category=category,
+                    name=new_subcategory_name,
+                    defaults={'slug': slugify(new_subcategory_name)}
+                )
+            elif not subcategory:
+                # Pas de sélection, ne devrait pas arriver ici (validé en clean)
+                messages.error(request, 'Vous devez sélectionner ou créer une sous-catégorie.')
+                return render(request, 'forum/topic_create.html', {
+                    'page_title': 'Créer un Sujet',
+                    'form': form,
+                    'action': 'Créer',
+                })
             
             # Créer le topic sans le sauvegarder tout de suite
             topic = form.save(commit=False)
@@ -284,4 +328,168 @@ def topic_delete(request, topic_id):
         'topic': topic,
     }
     return render(request, 'forum/topic_delete.html', context)
+
+
+# ============ RÉPONSES ============
+
+@login_required(login_url='accounts:login')
+@require_http_methods(["POST"])
+def reply_create(request, topic_id):
+    """
+    Créer une réponse à un sujet
+    Supporte les citations
+    """
+    topic = get_object_or_404(Topic, id=topic_id)
+    
+    # Vérifier que le sujet n'est pas verrouillé
+    if topic.is_locked:
+        messages.error(request, 'Ce sujet est verrouillé et ne peut pas recevoir de réponses.')
+        return redirect('forum:topic_detail', topic_id=topic.id)
+    
+    content = request.POST.get('content', '').strip()
+    quoted_reply_id = request.POST.get('quoted_reply_id')
+    
+    if not content:
+        messages.error(request, 'La réponse ne peut pas être vide.')
+        return redirect('forum:topic_detail', topic_id=topic.id)
+    
+    quoted_reply = None
+    if quoted_reply_id:
+        quoted_reply = get_object_or_404(Reply, id=quoted_reply_id, topic=topic)
+    
+    # Créer la réponse
+    reply = Reply.objects.create(
+        author=request.user,
+        topic=topic,
+        content=content,
+        quoted_reply=quoted_reply
+    )
+    
+    # Créer une notification pour l'auteur du topic
+    if request.user != topic.author:
+        from notifications.models import Notification
+        Notification.objects.create(
+            user=topic.author,
+            actor=request.user,
+            message=f"{request.user.username} a répondu à votre sujet: {topic.title}",
+            notification_type='reply',
+            topic=topic,
+            reply=reply
+        )
+    
+    messages.success(request, 'Votre réponse a été postée avec succès !')
+    return redirect('forum:topic_detail', topic_id=topic.id)
+
+
+@login_required(login_url='accounts:login')
+@require_http_methods(["GET", "POST"])
+def reply_update(request, reply_id):
+    """
+    Modifier une réponse
+    Seul l'auteur peut modifier
+    """
+    reply = get_object_or_404(Reply, id=reply_id)
+    
+    # Vérifier les permissions
+    if request.user != reply.author and not request.user.is_staff:
+        messages.error(request, 'Vous ne pouvez modifier que vos propres réponses.')
+        return redirect('forum:topic_detail', topic_id=reply.topic.id)
+    
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        if not content:
+            messages.error(request, 'La réponse ne peut pas être vide.')
+            return redirect('forum:topic_detail', topic_id=reply.topic.id)
+        
+        reply.content = content
+        reply.save()
+        messages.success(request, 'Votre réponse a été modifiée.')
+        return redirect('forum:topic_detail', topic_id=reply.topic.id)
+    
+    context = {
+        'page_title': 'Modifier la Réponse',
+        'reply': reply,
+        'topic': reply.topic,
+    }
+    return render(request, 'forum/reply_update.html', context)
+
+
+@login_required(login_url='accounts:login')
+@require_http_methods(["GET", "POST"])
+def reply_delete(request, reply_id):
+    """
+    Supprimer une réponse
+    Seul l'auteur ou un admin peut supprimer
+    """
+    reply = get_object_or_404(Reply, id=reply_id)
+    topic = reply.topic
+    
+    # Vérifier les permissions
+    if request.user != reply.author and not request.user.is_staff:
+        messages.error(request, 'Vous ne pouvez supprimer que vos propres réponses.')
+        return redirect('forum:topic_detail', topic_id=topic.id)
+    
+    if request.method == 'POST':
+        reply.delete()
+        messages.success(request, 'Votre réponse a été supprimée.')
+        return redirect('forum:topic_detail', topic_id=topic.id)
+    
+    context = {
+        'page_title': 'Supprimer la Réponse',
+        'reply': reply,
+        'topic': topic,
+    }
+    return render(request, 'forum/reply_delete.html', context)
+
+
+@login_required(login_url='accounts:login')
+@require_http_methods(["POST"])
+def mark_best_answer(request, reply_id):
+    """
+    Marquer une réponse comme meilleure réponse
+    Seul l'auteur du topic peut faire ça
+    """
+    reply = get_object_or_404(Reply, id=reply_id)
+    topic = reply.topic
+    
+    # Vérifier que l'utilisateur est l'auteur du topic
+    if request.user != topic.author and not request.user.is_staff:
+        messages.error(request, 'Seul l\'auteur du sujet peut marquer une meilleure réponse.')
+        return redirect('forum:topic_detail', topic_id=topic.id)
+    
+    with transaction.atomic():
+        # Enlever l'ancien best answer
+        old_best = topic.replies.filter(is_best_answer=True).first()
+        if old_best:
+            old_best.is_best_answer = False
+            old_best.save()
+            # Retirer les points de réputation
+            old_best.author.profile.reputation -= 25
+            old_best.author.profile.save()
+        
+        # Marquer la nouvelle meilleure réponse
+        reply.is_best_answer = True
+        reply.save()
+        
+        # Marquer le topic comme résolu
+        topic.is_solved = True
+        topic.save()
+        
+        # Ajouter les points de réputation
+        reply.author.profile.reputation += 25
+        reply.author.profile.save()
+        
+        # Créer une notification
+        from notifications.models import Notification
+        Notification.objects.create(
+            user=reply.author,
+            actor=request.user,
+            message=f"Votre réponse à \"{topic.title}\" a été marquée comme meilleure réponse !",
+            notification_type='best_answer',
+            topic=topic,
+            reply=reply
+        )
+    
+    messages.success(request, 'Réponse marquée comme meilleure réponse !')
+    return redirect('forum:topic_detail', topic_id=topic.id)
 

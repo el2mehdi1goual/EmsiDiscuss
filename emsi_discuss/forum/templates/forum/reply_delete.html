@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="mb-4">
+        <a href="{% url 'forum:topic_detail' topic_id=topic.id %}" class="text-decoration-none text-muted">
+            <i class="bi bi-arrow-left"></i> Retour au sujet
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirmer la suppression</h4>
+                </div>
+
+                <div class="card-body">
+                    <p class="text-muted mb-3">Êtes-vous sûr de vouloir supprimer cette réponse ?</p>
+
+                    <!-- Prévisualisation -->
+                    <div class="alert alert-light border mb-4">
+                        <strong>Sujet:</strong> {{ topic.title }}<br>
+                        <strong>Contenu:</strong><br>
+                        <p class="mb-0 mt-2">{{ reply.content|truncatewords:30 }}</p>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-circle"></i> Cette action est <strong>irréversible</strong>.
+                    </div>
+
+                    <form method="post" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger flex-grow-1">
+                            <i class="bi bi-trash"></i> Supprimer la réponse
+                        </button>
+                        <a href="{% url 'forum:topic_detail' topic_id=topic.id %}" class="btn btn-outline-secondary flex-grow-1">
+                            <i class="bi bi-x"></i> Annuler
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

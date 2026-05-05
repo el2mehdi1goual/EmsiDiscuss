@@ -92,18 +92,193 @@
                             {% endfor %}
                         </div>
                     {% endif %}
+
+                    <!-- Votes sur le topic -->
+                    {% if user.is_authenticated %}
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="d-flex gap-2 align-items-center">
+                                <span class="text-muted small">Cette réponse vous a-t-elle aidé ?</span>
+                                <form method="post" action="{% url 'votes:vote_topic' topic_id=topic.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="value" value="1">
+                                    <button type="submit" class="btn btn-sm {% if topic.user_vote.value == 1 %}btn-success{% else %}btn-outline-success{% endif %}">
+                                        <i class="bi bi-hand-thumbs-up"></i>
+                                    </button>
+                                </form>
+                                <span class="badge bg-light text-dark">{{ topic.vote_score|default:0 }}</span>
+                                <form method="post" action="{% url 'votes:vote_topic' topic_id=topic.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="value" value="-1">
+                                    <button type="submit" class="btn btn-sm {% if topic.user_vote.value == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                                        <i class="bi bi-hand-thumbs-down"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
-            <!-- Réponses (placeholder pour l'étape suivante) -->
+            <!-- Réponses -->
             <div class="card shadow-sm">
                 <div class="card-header">
-                    <h5 class="mb-0">Réponses</h5>
+                    <h5 class="mb-0"><i class="bi bi-chat-left"></i> Réponses ({{ replies.count }})</h5>
                 </div>
-                <div class="card-body text-center text-muted py-5">
-                    <p>Les réponses seront disponibles dans la prochaine étape du développement.</p>
+                <div class="card-body">
+                    {% if replies %}
+                        {% for reply in replies %}
+                            <div class="d-flex gap-3 mb-4 pb-4 {% if not forloop.last %}border-bottom{% endif %}" id="reply-{{ reply.id }}">
+                                <!-- Avatar auteur -->
+                                <div class="flex-shrink-0">
+                                    {% if reply.author.profile.avatar %}
+                                        <img src="{{ reply.author.profile.get_avatar_url }}" 
+                                             class="rounded-circle" width="40" height="40"
+                                             style="object-fit: cover;" alt="Avatar">
+                                    {% else %}
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                                             style="width: 40px; height: 40px;">
+                                            <i class="bi bi-person" style="font-size: 0.8rem;"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Contenu réponse -->
+                                <div class="flex-grow-1">
+                                    <!-- En-tête -->
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong class="d-block">{{ reply.author.get_full_name|default:reply.author.username }}</strong>
+                                            <small class="text-muted">@{{ reply.author.username }} • {{ reply.created_at|date:"d/m/Y à H:i" }}</small>
+                                            {% if reply.updated_at != reply.created_at %}
+                                                <small class="text-muted d-block">(modifiée le {{ reply.updated_at|date:"d/m/Y à H:i" }})</small>
+                                            {% endif %}
+                                        </div>
+
+                                        <!-- Badge meilleure réponse -->
+                                        {% if reply.is_best_answer %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Meilleure réponse
+                                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Citation si applicable -->
+                                    {% if reply.quoted_reply %}
+                                        <div class="card bg-light mb-3" style="border-left: 3px solid var(--primary-green);">
+                                            <div class="card-body small py-2 px-3">
+                                                <strong>{{ reply.quoted_reply.author.username }}</strong> a dit:
+                                                <p class="mb-0 mt-1 text-muted">{{ reply.quoted_reply.content|truncatewords:20 }}</p>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Contenu -->
+                                    <div class="content mb-3" style="line-height: 1.6;">
+                                        {{ reply.content|linebreaks }}
+                                    </div>
+
+                                    <!-- Votes et actions -->
+                                    <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                        <!-- Votes -->
+                                        {% if user.is_authenticated %}
+                                            <div class="d-flex gap-2">
+                                                <form method="post" action="{% url 'votes:vote_reply' reply_id=reply.id %}" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="value" value="1">
+                                                    <button type="submit" class="btn btn-sm {% if reply.user_vote.value == 1 %}btn-success{% else %}btn-outline-success{% endif %}">
+                                                        <i class="bi bi-hand-thumbs-up"></i> <span class="ms-1">{{ reply.vote_score|default:0 }}</span>
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{% url 'votes:vote_reply' reply_id=reply.id %}" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="value" value="-1">
+                                                    <button type="submit" class="btn btn-sm {% if reply.user_vote.value == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                                                        <i class="bi bi-hand-thumbs-down"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        {% endif %}
+
+                                        <!-- Actions auteur/admin -->
+                                        <div class="d-flex gap-2">
+                                            {% if user.is_authenticated and topic.author == user %}
+                                                {% if not reply.is_best_answer %}
+                                                    <form method="post" action="{% url 'forum:mark_best_answer' reply_id=reply.id %}" style="display: inline;">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-sm btn-outline-warning" title="Marquer comme meilleure réponse">
+                                                            <i class="bi bi-star"></i> Meilleure
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            {% endif %}
+
+                                            {% if user.is_authenticated and user == reply.author %}
+                                                <a href="{% url 'forum:reply_update' reply_id=reply.id %}" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a href="{% url 'forum:reply_delete' reply_id=reply.id %}" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            {% endif %}
+
+                                            {% if user.is_authenticated and user != reply.author %}
+                                                <button class="btn btn-sm btn-outline-primary" onclick="quoteReply({{ reply.id }}, '{{ reply.author.username }}')">
+                                                    <i class="bi bi-quote"></i> Citer
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <p>Aucune réponse pour le moment.</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
+
+            <!-- Formulaire réponse -->
+            {% if user.is_authenticated and not topic.is_locked %}
+                <div class="card shadow-sm mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Votre réponse</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'forum:reply_create' topic_id=topic.id %}">
+                            {% csrf_token %}
+                            
+                            <!-- Citation affichée -->
+                            <div id="quote-section" style="display: none;" class="alert alert-info mb-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong id="quote-author"></strong> a dit:
+                                        <p id="quote-content" class="mb-0 mt-1"></p>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearQuote()">✕</button>
+                                </div>
+                                <input type="hidden" id="quoted_reply_id" name="quoted_reply_id" value="">
+                            </div>
+
+                            <textarea name="content" class="form-control" rows="6" placeholder="Entrez votre réponse..." required></textarea>
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-primary-custom">
+                                    <i class="bi bi-send"></i> Poster la réponse
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% elif not user.is_authenticated %}
+                <div class="alert alert-info mt-4">
+                    <i class="bi bi-info-circle"></i> Vous devez être <a href="{% url 'accounts:login' %}">connecté</a> pour répondre.
+                </div>
+            {% elif topic.is_locked %}
+                <div class="alert alert-warning mt-4">
+                    <i class="bi bi-lock"></i> Ce sujet est verrouillé et ne peut pas recevoir de réponses.
+                </div>
+            {% endif %}
         </div>
 
         <!-- Sidebar -->
@@ -188,4 +363,27 @@
         overflow-x: auto;
     }
 </style>
+
+<script>
+    function quoteReply(replyId, authorName) {
+        // Récupérer le contenu de la réponse à partir du DOM
+        const replyDiv = document.getElementById(`reply-${replyId}`);
+        const contentDiv = replyDiv.querySelector('.content');
+        
+        // Afficher la section citation
+        document.getElementById('quote-section').style.display = 'block';
+        document.getElementById('quote-author').innerText = authorName;
+        document.getElementById('quote-content').innerText = contentDiv.innerText.trim().substring(0, 100);
+        document.getElementById('quoted_reply_id').value = replyId;
+        
+        // Scroll vers le formulaire
+        document.querySelector('[name="content"]').scrollIntoView({ behavior: 'smooth' });
+        document.querySelector('[name="content"]').focus();
+    }
+
+    function clearQuote() {
+        document.getElementById('quote-section').style.display = 'none';
+        document.getElementById('quoted_reply_id').value = '';
+    }
+</script>
 {% endblock %}

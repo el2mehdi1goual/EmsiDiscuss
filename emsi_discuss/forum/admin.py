@@ -2,7 +2,7 @@
 Administration pour l'application Forum
 """
 from django.contrib import admin
-from .models import Category, SubCategory, Tag, Topic
+from .models import Category, SubCategory, Tag, Topic, Reply
 
 
 @admin.register(Category)
@@ -96,3 +96,27 @@ class TopicAdmin(admin.ModelAdmin):
         """Affiche la catégorie parente"""
         return obj.get_category()
     get_category.short_description = 'Catégorie'
+
+
+@admin.register(Reply)
+class ReplyAdmin(admin.ModelAdmin):
+    """
+    Admin pour les réponses du forum
+    """
+    list_display = ('id', 'topic', 'author', 'is_best_answer', 'is_hidden', 'created_at')
+    list_filter = ('is_best_answer', 'is_hidden', 'created_at', 'topic__subcategory__category')
+    search_fields = ('content', 'author__username', 'topic__title')
+    readonly_fields = ('created_at', 'updated_at')
+    fieldsets = (
+        ('Informations', {
+            'fields': ('author', 'topic', 'content', 'quoted_reply')
+        }),
+        ('État', {
+            'fields': ('is_best_answer', 'is_hidden')
+        }),
+        ('Métadonnées', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    raw_id_fields = ('topic', 'quoted_reply')

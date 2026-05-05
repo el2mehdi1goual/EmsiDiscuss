@@ -7,5 +7,9 @@ from . import views
 app_name = 'votes'
 
 urlpatterns = [
-    path('', views.votes_home, name='home'),
+    # Votes sur les topics
+    path('topic/<int:topic_id>/vote/', views.vote_topic, name='vote_topic'),
+    
+    # Votes sur les réponses
+    path('reply/<int:reply_id>/vote/', views.vote_reply, name='vote_reply'),
 ]

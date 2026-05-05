@@ -132,3 +132,42 @@ class Topic(models.Model):
         """Incrémente le compteur de vues"""
         self.views_count += 1
         self.save(update_fields=['views_count'])
+
+
+class Reply(models.Model):
+    """
+    Réponse à un sujet du forum
+    """
+    # Auteur et localisation
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='replies')
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='replies')
+    
+    # Contenu
+    content = models.TextField()
+    quoted_reply = models.ForeignKey(
+        'self', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='quotes'
+    )
+    
+    # État
+    is_best_answer = models.BooleanField(default=False, help_text="Meilleure réponse")
+    is_hidden = models.BooleanField(default=False, help_text="Réponse masquée")
+    
+    # Métadonnées
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Réponse'
+        verbose_name_plural = 'Réponses'
+        ordering = ['is_best_answer', 'created_at']
+
+    def __str__(self):
+        return f"Réponse de {self.author} sur {self.topic.title}"
+
+    def get_author_display(self):
+        """Retourne le nom de l'auteur"""
+        return self.author.get_full_name() or self.author.username
