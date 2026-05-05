@@ -1,9 +1,10 @@
 """
 Modèles pour l'application Moderation
+Étape 6 du projet - À développer dans la prochaine phase
 """
 from django.db import models
 from django.conf import settings
-from forum.models import Topic, Reply
+from forum.models import Topic
 
 
 class Report(models.Model):
@@ -18,8 +19,7 @@ class Report(models.Model):
     ]
     
     reporter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reports_submitted')
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True, blank=True, related_name='reports')
-    reply = models.ForeignKey(Reply, on_delete=models.CASCADE, null=True, blank=True, related_name='reports')
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='reports')
     reason = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)

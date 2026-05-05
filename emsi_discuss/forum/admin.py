@@ -2,38 +2,97 @@
 Administration pour l'application Forum
 """
 from django.contrib import admin
-from .models import Category, SubCategory, Topic, Reply, Tag
+from .models import Category, SubCategory, Tag, Topic
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug')
+    """
+    Admin pour les catégories du forum
+    """
+    list_display = ('name', 'slug', 'created_at')
     search_fields = ('name',)
     prepopulated_fields = {'slug': ('name',)}
+    readonly_fields = ('created_at', 'updated_at')
+    fieldsets = (
+        ('Informations', {
+            'fields': ('name', 'slug', 'description')
+        }),
+        ('Métadonnées', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
 
 @admin.register(SubCategory)
 class SubCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'slug')
-    list_filter = ('category',)
-    search_fields = ('name',)
+    """
+    Admin pour les sous-catégories du forum
+    """
+    list_display = ('name', 'category', 'slug', 'created_at')
+    list_filter = ('category', 'created_at')
+    search_fields = ('name', 'category__name')
     prepopulated_fields = {'slug': ('name',)}
+    readonly_fields = ('created_at', 'updated_at')
+    fieldsets = (
+        ('Informations', {
+            'fields': ('category', 'name', 'slug', 'description')
+        }),
+        ('Métadonnées', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug')
+    """
+    Admin pour les tags
+    """
+    list_display = ('name', 'slug', 'created_at')
     search_fields = ('name',)
     prepopulated_fields = {'slug': ('name',)}
+    readonly_fields = ('created_at',)
+    fieldsets = (
+        ('Informations', {
+            'fields': ('name', 'slug', 'description')
+        }),
+        ('Métadonnées', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+
 
 @admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author', 'subcategory', 'is_locked', 'is_pinned', 'created_at')
-    list_filter = ('is_locked', 'is_pinned', 'is_solved', 'is_anonymous', 'created_at')
-    search_fields = ('title', 'content')
-    readonly_fields = ('created_at', 'updated_at')
+    """
+    Admin pour les sujets du forum
+    """
+    list_display = ('title', 'get_category', 'subcategory', 'author', 'is_solved', 'is_locked', 'is_pinned', 'created_at')
+    list_filter = ('is_solved', 'is_locked', 'is_pinned', 'created_at', 'subcategory__category')
+    search_fields = ('title', 'content', 'author__username')
+    readonly_fields = ('created_at', 'updated_at', 'views_count', 'get_author_display')
     filter_horizontal = ('tags',)
+    fieldsets = (
+        ('Informations', {
+            'fields': ('author', 'subcategory', 'title', 'content')
+        }),
+        ('Tags et Anonymat', {
+            'fields': ('tags', 'is_anonymous')
+        }),
+        ('État du Sujet', {
+            'fields': ('is_solved', 'is_locked', 'is_pinned')
+        }),
+        ('Métadonnées', {
+            'fields': ('created_at', 'updated_at', 'views_count', 'get_author_display'),
+            'classes': ('collapse',)
+        }),
+    )
 
-@admin.register(Reply)
-class ReplyAdmin(admin.ModelAdmin):
-    list_display = ('author', 'topic', 'is_best_answer', 'is_hidden', 'created_at')
-    list_filter = ('is_best_answer', 'is_hidden', 'created_at')
-    search_fields = ('content',)
-    readonly_fields = ('created_at', 'updated_at')
+    def get_category(self, obj):
+        """Affiche la catégorie parente"""
+        return obj.get_category()
+    get_category.short_description = 'Catégorie'

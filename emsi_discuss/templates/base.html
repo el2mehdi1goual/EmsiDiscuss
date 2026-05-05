@@ -127,8 +127,15 @@
                     <input class="form-control search-bar" type="search" placeholder="Rechercher une discussion, un tag..." aria-label="Search">
                 </form>
                 
+                <!-- Navigation Links -->
+                <div class="d-flex gap-3 ms-auto my-3 my-lg-0 align-items-center">
+                    <a href="{% url 'forum:home' %}" class="nav-link">
+                        <i class="bi bi-chat-left-text"></i> Forum
+                    </a>
+                </div>
+                
                 <!-- Actions -->
-                <div class="d-flex align-items-center ms-auto mt-3 mt-lg-0 gap-2">
+                <div class="d-flex align-items-center mt-3 mt-lg-0 gap-2">
                     {% if user.is_authenticated %}
                         <!-- Utilisateur connecté -->
                         <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary btn-sm">

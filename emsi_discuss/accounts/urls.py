@@ -14,6 +14,7 @@ urlpatterns = [
     
     # Profil
     path('profile/', views.profile, name='profile'),
-    path('profile/<str:username>/', views.profile, name='profile_view'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
+    # IMPORTANT: garder cette route après "profile/edit/" sinon "edit" est pris comme username
+    path('profile/<str:username>/', views.profile, name='profile_view'),
 ]

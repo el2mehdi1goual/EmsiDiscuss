@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger shadow-sm">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+                        <h2 class="card-title mt-3 text-danger">Supprimer le Sujet</h2>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <p class="mb-0">
+                            <strong>Attention !</strong> Cette action est irréversible.
+                        </p>
+                    </div>
+
+                    <!-- Détails du sujet -->
+                    <div class="card mb-4 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">Sujet à supprimer :</h6>
+                            <h5 class="mb-2">{{ topic.title }}</h5>
+                            <small class="text-muted">
+                                <div>Créé le {{ topic.created_at|date:"d/m/Y à H:i" }}</div>
+                                <div>Sous-catégorie : {{ topic.subcategory }}</div>
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Avertissements -->
+                    <div class="alert alert-danger">
+                        <strong>En supprimant ce sujet :</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Le sujet et tout son contenu seront supprimés</li>
+                            <li>Les réponses associées (si présentes) seront également supprimées</li>
+                            <li>Cette action ne peut pas être annulée</li>
+                        </ul>
+                    </div>
+
+                    <!-- Formulaire de confirmation -->
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Supprimer définitivement
+                            </button>
+                            <a href="{% url 'forum:topic_detail' topic_id=topic.id %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Lien vers le sujet -->
+            <div class="text-center mt-4">
+                <a href="{% url 'forum:topic_detail' topic_id=topic.id %}" class="text-decoration-none">
+                    ← Retour au sujet
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

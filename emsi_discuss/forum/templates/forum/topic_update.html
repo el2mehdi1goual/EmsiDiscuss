@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="card-title mb-1">{{ action }} le Sujet</h2>
+                    <p class="text-muted mb-4">Vous modifiez : <strong>{{ topic.title }}</strong></p>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Note : la sous-catégorie n'est pas modifiable -->
+                        <div class="alert alert-secondary mb-3">
+                            <small>
+                                <strong>Sous-catégorie :</strong> {{ topic.subcategory }}<br>
+                                <small class="text-muted">Vous ne pouvez pas modifier la catégorie après la création</small>
+                            </small>
+                        </div>
+
+                        <!-- Titre -->
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">
+                                {{ form.title.label }} *
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.title.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">
+                                {{ form.title.help_text }}
+                            </small>
+                        </div>
+
+                        <!-- Contenu -->
+                        <div class="mb-3">
+                            <label for="{{ form.content.id_for_label }}" class="form-label">
+                                {{ form.content.label }} *
+                            </label>
+                            {{ form.content }}
+                            {% if form.content.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.content.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">
+                                {{ form.content.help_text }}
+                            </small>
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="mb-3">
+                            <label for="{{ form.tag_names.id_for_label }}" class="form-label">
+                                {{ form.tag_names.label }}
+                            </label>
+                            {{ form.tag_names }}
+                            {% if form.tag_names.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.tag_names.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">
+                                {{ form.tag_names.help_text }}
+                            </small>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Anonymat -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                {{ form.is_anonymous }}
+                                <label class="form-check-label" for="{{ form.is_anonymous.id_for_label }}">
+                                    {{ form.is_anonymous.label }}
+                                </label>
+                                <small class="form-text text-muted d-block mt-1">
+                                    Votre nom ne sera pas affiché si vous cochez cette case
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary-custom">
+                                <i class="bi bi-check-lg"></i> Enregistrer les modifications
+                            </button>
+                            <a href="{% url 'forum:topic_detail' topic_id=topic.id %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info modification -->
+            <div class="alert alert-info mt-4">
+                <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Information</h6>
+                <small>
+                    Date de création : <strong>{{ topic.created_at|date:"d/m/Y à H:i" }}</strong><br>
+                    Dernière modification : <strong>{{ topic.updated_at|date:"d/m/Y à H:i" }}</strong>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-color: #e0e0e0;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 0.2rem rgba(0, 138, 69, 0.25);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-2">Sujets du Forum</h1>
+            <p class="text-muted">Trouvez les discussions qui vous intéressent</p>
+        </div>
+        {% if user.is_authenticated %}
+            <a href="{% url 'forum:topic_create' %}" class="btn btn-primary-custom">
+                <i class="bi bi-plus-circle"></i> Créer un Sujet
+            </a>
+        {% else %}
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary">
+                <i class="bi bi-box-arrow-in-right"></i> Se connecter pour créer
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Filtrer les sujets</h5>
+            <form method="get" class="row g-3">
+                <!-- Recherche texte -->
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Recherche</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           placeholder="Titre ou contenu..." value="{{ search_query }}">
+                </div>
+
+                <!-- Filtre Catégorie -->
+                <div class="col-md-3">
+                    <label for="category" class="form-label">Catégorie</label>
+                    <select class="form-select" id="category" name="category" onchange="filterByCategoryAndUpdateForm()">
+                        <option value="">-- Toutes les catégories --</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" 
+                                    {% if current_category|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Filtre Sous-catégorie -->
+                <div class="col-md-3">
+                    <label for="subcategory" class="form-label">Sous-catégorie</label>
+                    <select class="form-select" id="subcategory" name="subcategory">
+                        <option value="">-- Toutes les sous-catégories --</option>
+                        {% for subcategory in subcategories %}
+                            <option value="{{ subcategory.id }}" 
+                                    {% if current_subcategory|stringformat:"s" == subcategory.id|stringformat:"s" %}selected{% endif %}>
+                                {{ subcategory.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Filtre Tag -->
+                <div class="col-md-3">
+                    <label for="tag" class="form-label">Tag</label>
+                    <select class="form-select" id="tag" name="tag">
+                        <option value="">-- Tous les tags --</option>
+                        {% for tag in tags %}
+                            <option value="{{ tag.id }}" 
+                                    {% if current_tag|stringformat:"s" == tag.id|stringformat:"s" %}selected{% endif %}>
+                                {{ tag.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Filtre Statut -->
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Statut</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">-- Tous les statuts --</option>
+                        <option value="open" {% if current_status == 'open' %}selected{% endif %}>Ouvert</option>
+                        <option value="solved" {% if current_status == 'solved' %}selected{% endif %}>Résolu</option>
+                        <option value="locked" {% if current_status == 'locked' %}selected{% endif %}>Verrouillé</option>
+                    </select>
+                </div>
+
+                <!-- Boutons -->
+                <div class="col-12 d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary-custom">
+                        <i class="bi bi-funnel"></i> Appliquer les filtres
+                    </button>
+                    <a href="{% url 'forum:topic_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Résultats -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-muted">
+            <strong>{{ topics.count }}</strong> sujet{{ topics.count|pluralize }}
+        </p>
+    </div>
+
+    {% if topics %}
+        <!-- Liste des sujets -->
+        <div class="row gap-3">
+            {% for topic in topics %}
+                <div class="col-12">
+                    <div class="card shadow-sm border-0 topic-card">
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Statuts et épingle -->
+                                <div class="col-auto">
+                                    <div class="d-flex flex-column gap-1">
+                                        {% if topic.is_pinned %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-pin-fill"></i> Épinglé
+                                            </span>
+                                        {% endif %}
+                                        {% if topic.is_solved %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Résolu
+                                            </span>
+                                        {% endif %}
+                                        {% if topic.is_locked %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-lock"></i> Verrouillé
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Contenu principal -->
+                                <div class="col">
+                                    <!-- Titre (lien) -->
+                                    <h5 class="mb-2">
+                                        <a href="{% url 'forum:topic_detail' topic_id=topic.id %}" class="text-decoration-none">
+                                            {{ topic.title }}
+                                        </a>
+                                    </h5>
+
+                                    <!-- Infos auteur et catégorie -->
+                                    <div class="text-muted small mb-2">
+                                        <span>Par <strong>{{ topic.get_author_display }}</strong></span>
+                                        <span class="ms-2">dans <strong>{{ topic.subcategory }}</strong></span>
+                                        <span class="ms-2">le {{ topic.created_at|date:"d/m/Y H:i" }}</span>
+                                    </div>
+
+                                    <!-- Tags -->
+                                    {% if topic.tags.all %}
+                                        <div class="mb-2">
+                                            {% for tag in topic.tags.all %}
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="bi bi-tag"></i> {{ tag.name }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Aperçu contenu -->
+                                    <p class="text-muted mb-0 small">
+                                        {{ topic.content|truncatewords:30 }}
+                                    </p>
+                                </div>
+
+                                <!-- Stats et actions -->
+                                <div class="col-auto text-end">
+                                    <div class="mb-2">
+                                        <div class="text-muted small">
+                                            <div><i class="bi bi-eye"></i> {{ topic.views_count }} vue{{ topic.views_count|pluralize }}</div>
+                                            <div><i class="bi bi-chat"></i> 0 réponse{{ 0|pluralize }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <a href="{% url 'forum:topic_detail' topic_id=topic.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-arrow-right"></i> Voir
+                                        </a>
+                                        {% if user.is_authenticated and user == topic.author %}
+                                            <a href="{% url 'forum:topic_update' topic_id=topic.id %}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Aucun sujet -->
+        <div class="alert alert-info text-center py-5">
+            <i class="bi bi-info-circle" style="font-size: 2rem;"></i>
+            <p class="mt-3 mb-0">Aucun sujet ne correspond à vos critères de recherche.</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'forum:topic_create' %}" class="btn btn-primary-custom mt-3">
+                    <i class="bi bi-plus-circle"></i> Créer le premier sujet
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .topic-card {
+        transition: all 0.2s ease;
+    }
+    .topic-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-2px);
+    }
+    .topic-card a {
+        color: inherit;
+    }
+    .topic-card a:hover {
+        color: var(--primary-green);
+    }
+</style>
+{% endblock %}

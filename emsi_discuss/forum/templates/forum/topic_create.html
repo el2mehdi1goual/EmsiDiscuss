@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="card-title mb-4">{{ action }} un Sujet</h2>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Catégorie -->
+                        <div class="mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">
+                                {{ form.category.label }} *
+                            </label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.category.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">
+                                {{ form.category.help_text }}
+                            </small>
+                        </div>
+
+                        <!-- Sous-catégorie -->
+                        <div class="mb-3">
+                            <label for="{{ form.subcategory_name.id_for_label }}" class="form-label">
+                                {{ form.subcategory_name.label }} *
+                            </label>
+                            {{ form.subcategory_name }}
+                            {% if form.subcategory_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.subcategory_name.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">
+                                {{ form.subcategory_name.help_text }}
+                            </small>
+                        </div>
+
+                        <!-- Titre -->
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">
+                                {{ form.title.label }} *
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.title.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">
+                                {{ form.title.help_text }}
+                            </small>
+                        </div>
+
+                        <!-- Contenu -->
+                        <div class="mb-3">
+                            <label for="{{ form.content.id_for_label }}" class="form-label">
+                                {{ form.content.label }} *
+                            </label>
+                            {{ form.content }}
+                            {% if form.content.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.content.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">
+                                {{ form.content.help_text }}
+                            </small>
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="mb-3">
+                            <label for="{{ form.tag_names.id_for_label }}" class="form-label">
+                                {{ form.tag_names.label }}
+                            </label>
+                            {{ form.tag_names }}
+                            {% if form.tag_names.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.tag_names.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">
+                                {{ form.tag_names.help_text }}
+                            </small>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Anonymat -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                {{ form.is_anonymous }}
+                                <label class="form-check-label" for="{{ form.is_anonymous.id_for_label }}">
+                                    {{ form.is_anonymous.label }}
+                                </label>
+                                <small class="form-text text-muted d-block mt-1">
+                                    Votre nom ne sera pas affiché si vous cochez cette case
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary-custom">
+                                <i class="bi bi-check-lg"></i> {{ action }} le sujet
+                            </button>
+                            <a href="{% url 'forum:topic_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Aide et conseils -->
+            <div class="alert alert-info mt-4">
+                <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Conseils pour un bon sujet</h6>
+                <ul class="mb-0">
+                    <li>Soyez descriptif et clair dans votre titre</li>
+                    <li>Fournissez autant de détails que possible</li>
+                    <li>Utilisez les tags pertinents pour améliorer la visibilité</li>
+                    <li>Formatez votre contenu pour le rendre lisible</li>
+                    <li>Vérifiez que votre question n'existe pas déjà</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-color: #e0e0e0;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 0.2rem rgba(0, 138, 69, 0.25);
+    }
+</style>
+{% endblock %}
