@@ -53,6 +53,10 @@ def report_content(request, content_type_name, object_id):
             report.object_id = object_id
             report.save()
             
+            # Créer une notification pour l'auteur du contenu signalé
+            from notifications.views import create_report_notification
+            create_report_notification(content_object.author, report)
+            
             messages.success(request, 'Merci ! Votre signalement a été transmis aux modérateurs.')
             if content_type_name == 'topic':
                 return redirect('forum:topic_detail', topic_id=object_id)

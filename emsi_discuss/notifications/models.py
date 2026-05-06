@@ -11,9 +11,8 @@ class Notification(models.Model):
     """
     NOTIFICATION_TYPES = (
         ('reply', 'Nouvelle réponse'),
-        ('vote', 'Vote reçu'),
+        ('report', 'Contenu signalé'),
         ('best_answer', 'Meilleure réponse'),
-        ('mention', 'Mention'),
     )
     
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
@@ -23,6 +22,7 @@ class Notification(models.Model):
     # Références optionnelles
     topic = models.ForeignKey('forum.Topic', on_delete=models.CASCADE, null=True, blank=True, related_name='notifications')
     reply = models.ForeignKey('forum.Reply', on_delete=models.CASCADE, null=True, blank=True, related_name='notifications')
+    report = models.ForeignKey('moderation.Report', on_delete=models.CASCADE, null=True, blank=True, related_name='notifications')
     actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='notifications_sent')
     
     # État

@@ -15,11 +15,11 @@ class NotificationAdmin(admin.ModelAdmin):
             'fields': ('user', 'actor', 'message', 'notification_type')
         }),
         ('Références', {
-            'fields': ('topic', 'reply'),
+            'fields': ('topic', 'reply', 'report'),
             'classes': ('collapse',)
         }),
         ('État', {
             'fields': ('is_read', 'created_at'),
         }),
     )
-    raw_id_fields = ('topic', 'reply', 'actor')
+    raw_id_fields = ('topic', 'reply', 'report', 'actor')

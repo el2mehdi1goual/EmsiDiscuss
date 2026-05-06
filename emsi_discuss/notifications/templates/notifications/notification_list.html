@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h2 class="mb-4">
+                Notifications
+                {% if unread_count > 0 %}
+                    <span class="badge bg-danger">{{ unread_count }} non lue(s)</span>
+                {% endif %}
+            </h2>
+
+            <!-- Boutons d'action -->
+            {% if unread_count > 0 %}
+                <div class="mb-3">
+                    <a href="{% url 'notifications:mark_all_read' %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-check2-all"></i> Tout marquer comme lu
+                    </a>
+                </div>
+            {% endif %}
+
+            <!-- Liste des notifications -->
+            {% if notifications %}
+                <div class="list-group">
+                    {% for notification in notifications %}
+                        <div class="list-group-item {% if not notification.is_read %}list-group-item-light border-start border-5 border-info{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <!-- Type de notification avec icône -->
+                                    {% if notification.notification_type == 'reply' %}
+                                        <span class="badge bg-info"><i class="bi bi-chat-left"></i> Réponse</span>
+                                    {% elif notification.notification_type == 'report' %}
+                                        <span class="badge bg-warning"><i class="bi bi-flag"></i> Signalement</span>
+                                    {% elif notification.notification_type == 'best_answer' %}
+                                        <span class="badge bg-success"><i class="bi bi-star"></i> Meilleure réponse</span>
+                                    {% endif %}
+
+                                    <!-- Message -->
+                                    <p class="mb-2 mt-2">
+                                        <strong>{{ notification.message }}</strong>
+                                    </p>
+
+                                    <!-- Détails du report si notification de signalement -->
+                                    {% if notification.notification_type == 'report' and notification.report %}
+                                        <div class="alert alert-warning py-2 px-3 mb-2" role="alert">
+                                            <strong>Rapport de signalement :</strong>
+                                            <ul class="mb-0 mt-2">
+                                                <li><strong>Raison :</strong> {{ notification.report.get_reason_display }}</li>
+                                                <li><strong>Statut :</strong> 
+                                                    {% if notification.report.status == 'pending' %}
+                                                        <span class="badge bg-warning">En attente</span>
+                                                    {% elif notification.report.status == 'reviewed' %}
+                                                        <span class="badge bg-info">Examiné</span>
+                                                    {% elif notification.report.status == 'resolved' %}
+                                                        <span class="badge bg-success">Résolu</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger">Rejeté</span>
+                                                    {% endif %}
+                                                </li>
+                                                {% if notification.report.details %}
+                                                    <li><strong>Détails :</strong> {{ notification.report.details }}</li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                        
+                                        <!-- Lien vers le contenu signalé -->
+                                        <p class="mb-2 text-muted">
+                                            {% if notification.report.content_type.model == 'topic' %}
+                                                <small>Sujet signalé : <a href="{% url 'forum:topic_detail' notification.report.object_id %}">Voir le sujet</a></small>
+                                            {% elif notification.report.content_type.model == 'reply' %}
+                                                <small>Réponse signalée : <a href="{% url 'forum:topic_detail' notification.report.content_object.topic.id %}">Voir la discussion</a></small>
+                                            {% endif %}
+                                        </p>
+                                    {% endif %}
+
+                                    <!-- Lien vers le contenu concerné (pour réponses et best_answer) -->
+                                    {% if notification.topic and notification.notification_type != 'report' %}
+                                        <p class="mb-2 text-muted">
+                                            <small>Sujet : <a href="{% url 'forum:topic_detail' notification.topic.id %}">{{ notification.topic.title }}</a></small>
+                                        </p>
+                                    {% endif %}
+
+                                    <!-- Date -->
+                                    <p class="mb-0">
+                                        <small class="text-muted">
+                                            {{ notification.created_at|date:"d/m/Y H:i" }}
+                                        </small>
+                                    </p>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="ms-3">
+                                    {% if not notification.is_read %}
+                                        <a href="{% url 'notifications:mark_read' notification.id %}?next={% url 'notifications:list' %}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Marquer comme lu">
+                                            <i class="bi bi-check-circle"></i>
+                                        </a>
+                                    {% else %}
+                                        <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Lu</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle"></i> Aucune notification pour le moment
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Résumé</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        <strong>Total :</strong> {{ notifications|length }} notification(s)<br>
+                        <strong>Non lues :</strong> <span class="badge bg-danger">{{ unread_count }}</span><br>
+                        <strong>Lues :</strong> <span class="badge bg-success">{{ notifications|length|add:unread_count }}</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
