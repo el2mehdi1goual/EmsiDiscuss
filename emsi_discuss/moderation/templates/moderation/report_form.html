@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2>Signaler un contenu</h2>
+            <hr>
+
+            <div class="alert alert-info">
+                <strong>Type de contenu :</strong> {{ content_type_name|title }}
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" class="form">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="{{ form.reason.id_for_label }}">{{ form.reason.label }}</label>
+                    {{ form.reason }}
+                    {% if form.reason.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.reason.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.details.id_for_label }}">{{ form.details.label }}</label>
+                    {{ form.details }}
+                    {% if form.details.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.details.errors }}
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">Expliquez précisément pourquoi vous signalez ce contenu.</small>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-danger">Envoyer le signalement</button>
+                    <a href="javascript:history.back()" class="btn btn-secondary">Annuler</a>
+                </div>
+            </form>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Contenu signalé</h5>
+                </div>
+                <div class="card-body">
+                    {% if content_type_name == 'topic' %}
+                        <h6>{{ content_object.title }}</h6>
+                        <p class="text-muted">Auteur : {{ content_object.get_author_display }}</p>
+                        <p>{{ content_object.content|truncatewords:50 }}</p>
+                    {% elif content_type_name == 'reply' %}
+                        <h6>Réponse sur : {{ content_object.topic.title }}</h6>
+                        <p class="text-muted">Auteur : {{ content_object.author.get_full_name|default:content_object.author.username }}</p>
+                        <p>{{ content_object.content|truncatewords:50 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

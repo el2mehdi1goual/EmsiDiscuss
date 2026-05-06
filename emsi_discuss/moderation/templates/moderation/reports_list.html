@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Signalements</h2>
+            <hr>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="mb-3">
+                <a href="?status=pending" class="btn {% if current_status == 'pending' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    En attente
+                </a>
+                <a href="?status=reviewed" class="btn {% if current_status == 'reviewed' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    Examinés
+                </a>
+                <a href="?status=resolved" class="btn {% if current_status == 'resolved' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    Résolus
+                </a>
+                <a href="?status=rejected" class="btn {% if current_status == 'rejected' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    Rejetés
+                </a>
+            </div>
+
+            {% if reports %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Reporteur</th>
+                                <th>Raison</th>
+                                <th>Contenu</th>
+                                <th>Statut</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                                <tr>
+                                    <td>#{{ report.id }}</td>
+                                    <td>{{ report.reporter.username }}</td>
+                                    <td>{{ report.get_reason_display }}</td>
+                                    <td>
+                                        {% if report.content_type.model == 'topic' %}
+                                            <small>Topic: {{ report.content_object.title|truncatewords:5 }}</small>
+                                        {% elif report.content_type.model == 'reply' %}
+                                            <small>Reply sur: {{ report.content_object.topic.title|truncatewords:5 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if report.status == 'pending' %}badge-warning{% elif report.status == 'reviewed' %}badge-info{% elif report.status == 'resolved' %}badge-success{% else %}badge-danger{% endif %}">
+                                            {{ report.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ report.created_at|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'moderation:report_detail' report.id %}" class="btn btn-sm btn-info">
+                                            Détail
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Aucun signalement avec ce statut.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

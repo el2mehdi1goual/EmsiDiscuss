@@ -104,6 +104,8 @@ class Topic(models.Model):
     is_solved = models.BooleanField(default=False, help_text="Sujet résolu")
     is_locked = models.BooleanField(default=False, help_text="Sujet verrouillé (pas de réponses)")
     is_pinned = models.BooleanField(default=False, help_text="Sujet épinglé en haut")
+    is_hidden = models.BooleanField(default=False, help_text="Sujet masqué par modération")
+    hidden_reason = models.CharField(max_length=255, blank=True, help_text="Raison du masquage")
     
     # Métadonnées
     created_at = models.DateTimeField(auto_now_add=True)
@@ -155,6 +157,7 @@ class Reply(models.Model):
     # État
     is_best_answer = models.BooleanField(default=False, help_text="Meilleure réponse")
     is_hidden = models.BooleanField(default=False, help_text="Réponse masquée")
+    hidden_reason = models.CharField(max_length=255, blank=True, help_text="Raison du masquage")
     
     # Métadonnées
     created_at = models.DateTimeField(auto_now_add=True)

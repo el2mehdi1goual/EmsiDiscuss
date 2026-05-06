@@ -53,6 +53,10 @@
                                     <i class="bi bi-trash"></i> Supprimer
                                 </a>
                             </div>
+                        {% elif user.is_authenticated %}
+                            <a href="{% url 'moderation:report_content' 'topic' topic.id %}" class="btn btn-sm btn-outline-danger" title="Signaler ce contenu">
+                                <i class="bi bi-flag"></i> Signaler
+                            </a>
                         {% endif %}
                     </div>
                 </div>
@@ -225,6 +229,9 @@
                                                 <button class="btn btn-sm btn-outline-primary" onclick="quoteReply({{ reply.id }}, '{{ reply.author.username }}')">
                                                     <i class="bi bi-quote"></i> Citer
                                                 </button>
+                                                <a href="{% url 'moderation:report_content' 'reply' reply.id %}" class="btn btn-sm btn-outline-danger" title="Signaler cette réponse">
+                                                    <i class="bi bi-flag"></i> Signaler
+                                                </a>
                                             {% endif %}
                                         </div>
                                     </div>

@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Détail du Signalement #{{ report.id }}</h2>
+            <hr>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Informations du signalement</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Reporteur :</strong> {{ report.reporter.username }}</p>
+                            <p><strong>Raison :</strong> {{ report.get_reason_display }}</p>
+                            <p><strong>Statut :</strong> 
+                                <span class="badge {% if report.status == 'pending' %}badge-warning{% elif report.status == 'reviewed' %}badge-info{% elif report.status == 'resolved' %}badge-success{% else %}badge-danger{% endif %}">
+                                    {{ report.get_status_display }}
+                                </span>
+                            </p>
+                            <p><strong>Date :</strong> {{ report.created_at|date:"d/m/Y H:i" }}</p>
+                            {% if report.reviewed_by %}
+                                <p><strong>Examiné par :</strong> {{ report.reviewed_by.username }}</p>
+                                <p><strong>Date d'examen :</strong> {{ report.reviewed_at|date:"d/m/Y H:i" }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Détails du signalement</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>{{ report.details }}</p>
+                        </div>
+                    </div>
+
+                    {% if report.resolution_notes %}
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5>Notes de résolution</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>{{ report.resolution_notes }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Contenu signalé</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if report.content_type.model == 'topic' %}
+                                <h6>Sujet : {{ report.content_object.title }}</h6>
+                                <p class="text-muted">Auteur : {{ report.content_object.get_author_display }}</p>
+                                <p class="text-muted">Créé : {{ report.content_object.created_at|date:"d/m/Y H:i" }}</p>
+                                <hr>
+                                <p>{{ report.content_object.content }}</p>
+                                <a href="{% url 'forum:topic_detail' report.content_object.id %}" class="btn btn-sm btn-primary mt-2">
+                                    Voir le sujet
+                                </a>
+                            {% elif report.content_type.model == 'reply' %}
+                                <h6>Réponse sur : {{ report.content_object.topic.title }}</h6>
+                                <p class="text-muted">Auteur : {{ report.content_object.author.get_full_name|default:report.content_object.author.username }}</p>
+                                <p class="text-muted">Créée : {{ report.content_object.created_at|date:"d/m/Y H:i" }}</p>
+                                <hr>
+                                <p>{{ report.content_object.content }}</p>
+                                <a href="{% url 'forum:topic_detail' report.content_object.topic.id %}" class="btn btn-sm btn-primary mt-2">
+                                    Voir le sujet
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if report.status == 'pending' %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Actions de modération</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" class="form">
+                            {% csrf_token %}
+
+                            <div class="form-group">
+                                <label><strong>Sélectionnez une action :</strong></label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="action" id="action_hide" value="hide" required>
+                                    <label class="form-check-label" for="action_hide">
+                                        Masquer le contenu
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="action" id="action_ban" value="ban">
+                                    <label class="form-check-label" for="action_ban">
+                                        Bannir l'auteur (7 jours)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="action" id="action_approve" value="approve">
+                                    <label class="form-check-label" for="action_approve">
+                                        Approuver (ne rien faire)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="action" id="action_reject" value="reject">
+                                    <label class="form-check-label" for="action_reject">
+                                        Rejeter le signalement
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="resolution_notes"><strong>Notes de résolution (optionnel) :</strong></label>
+                                <textarea class="form-control" id="resolution_notes" name="resolution_notes" rows="3" placeholder="Expliquez l'action prise..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Confirmer l'action</button>
+                            <a href="{% url 'moderation:reports_list' %}" class="btn btn-secondary">Retour</a>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <strong>Signalement déjà traité</strong> - Statut : {{ report.get_status_display }}
+                </div>
+                <a href="{% url 'moderation:reports_list' %}" class="btn btn-secondary">Retour à la liste</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

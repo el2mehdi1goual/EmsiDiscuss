@@ -161,9 +161,20 @@ def topic_detail(request, topic_id):
     """
     Vue pour afficher le détail d'un sujet avec ses réponses
     Incrémente le nombre de vues
+    Masque les contenus s'ils sont cachés (sauf pour modérateurs/auteur)
     """
     topic = get_object_or_404(Topic, id=topic_id)
-    replies = topic.replies.filter(is_hidden=False).select_related('author').prefetch_related('votes', 'quotes')
+    
+    # Vérifier si le sujet est masqué (sauf pour modérateurs/auteur)
+    is_moderator = request.user.is_staff or (hasattr(request.user, 'profile') and request.user.profile.role in ['moderator', 'admin'])
+    if topic.is_hidden and request.user != topic.author and not is_moderator:
+        raise Http404("Ce sujet a été masqué.")
+    
+    replies = topic.replies.select_related('author').prefetch_related('votes', 'quotes')
+    
+    # Filtrer les réponses masquées (sauf pour modérateurs/auteur)
+    if not (request.user == topic.author or is_moderator):
+        replies = replies.filter(is_hidden=False)
     
     # Incrémenter les vues (sauf si c'est l'auteur)
     if request.user != topic.author:
@@ -183,6 +194,7 @@ def topic_detail(request, topic_id):
         'topic': topic,
         'replies': replies,
         'category': topic.get_category(),
+        'is_moderator': is_moderator,
     }
     return render(request, 'forum/topic_detail.html', context)
 
@@ -338,8 +350,21 @@ def reply_create(request, topic_id):
     """
     Créer une réponse à un sujet
     Supporte les citations
+    Vérifie que l'utilisateur n'est pas banni et que le sujet n'est pas verrouillé
     """
     topic = get_object_or_404(Topic, id=topic_id)
+    
+    # Vérifier que l'utilisateur n'est pas banni
+    from django.utils import timezone
+    if request.user.profile.is_banned:
+        if request.user.profile.banned_until and request.user.profile.banned_until > timezone.now():
+            messages.error(request, 'Vous avez été banni de participer au forum.')
+            return redirect('forum:topic_detail', topic_id=topic.id)
+        else:
+            # Débannir si le bannissement a expiré
+            request.user.profile.is_banned = False
+            request.user.profile.banned_until = None
+            request.user.profile.save()
     
     # Vérifier que le sujet n'est pas verrouillé
     if topic.is_locked:
