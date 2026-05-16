@@ -96,15 +96,15 @@
 
             <!-- Stats -->
             <div class="profile-stats mt-4">
-                <div class="profile-stat">
+                <div>
                     <div class="profile-stat-value">{{ profile.reputation }}</div>
                     <div class="profile-stat-label">Réputation</div>
                 </div>
-                <div class="profile-stat">
-                    <div class="profile-stat-value">{{ profile_user.forum_posts.count|default:0 }}</div>
+                <div>
+                    <div class="profile-stat-value">{{ profile_user.topics.count }}</div>
                     <div class="profile-stat-label">Publications</div>
                 </div>
-                <div class="profile-stat">
+                <div>
                     <div class="profile-stat-value">
                         {% if profile_user.date_joined %}
                             {% now "Y" as current_year %}
@@ -119,7 +119,7 @@
                     </div>
                     <div class="profile-stat-label">Ancienneté</div>
                 </div>
-                <div class="profile-stat">
+                <div>
                     <div class="profile-stat-value">
                         {% if profile.promotion %}
                             {{ profile.promotion }}
