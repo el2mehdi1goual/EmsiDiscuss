@@ -100,15 +100,15 @@ def topic_list(request):
     topics = Topic.objects.select_related('author', 'subcategory__category').prefetch_related('tags')
     
     # Filtres GET
-    category_id = request.GET.get('category')
+    category_ids = request.GET.getlist('category')
     subcategory_id = request.GET.get('subcategory')
     tag_id = request.GET.get('tag')
-    status_filter = request.GET.get('status')
+    status_filters = request.GET.getlist('status')
     search = request.GET.get('search', '').strip()
 
     # Appliquer les filtres
-    if category_id:
-        topics = topics.filter(subcategory__category_id=category_id)
+    if category_ids:
+        topics = topics.filter(subcategory__category_id__in=category_ids)
     
     if subcategory_id:
         topics = topics.filter(subcategory_id=subcategory_id)
@@ -116,13 +116,19 @@ def topic_list(request):
     if tag_id:
         topics = topics.filter(tags__id=tag_id)
     
-    # Filtre statut : résolu, verrouillé, ouvert
-    if status_filter == 'solved':
-        topics = topics.filter(is_solved=True)
-    elif status_filter == 'locked':
-        topics = topics.filter(is_locked=True)
-    elif status_filter == 'open':
-        topics = topics.filter(is_solved=False, is_locked=False)
+    # Filtre statut : résolu, verrouillé, ouvert (multi-sélection)
+    if status_filters:
+        from django.db.models import Q
+        status_query = Q()
+        
+        if 'solved' in status_filters:
+            status_query |= Q(is_solved=True)
+        if 'locked' in status_filters:
+            status_query |= Q(is_locked=True)
+        if 'open' in status_filters:
+            status_query |= Q(is_solved=False, is_locked=False)
+        
+        topics = topics.filter(status_query)
     
     # Recherche texte (titre, contenu, ou tags)
     if search:
@@ -141,6 +147,11 @@ def topic_list(request):
     categories = Category.objects.all()
     subcategories = SubCategory.objects.all()
     tags = Tag.objects.all()
+    
+    # Compter les totaux pour les statistiques
+    total_topics = Topic.objects.count()
+    total_replies = Reply.objects.count()
+    total_users = __import__('django.contrib.auth.models', fromlist=['User']).User.objects.count()
 
     context = {
         'page_title': 'Liste des Sujets - Forum',
@@ -148,11 +159,14 @@ def topic_list(request):
         'categories': categories,
         'subcategories': subcategories,
         'tags': tags,
-        'current_category': category_id,
+        'selected_categories': category_ids,
         'current_subcategory': subcategory_id,
         'current_tag': tag_id,
-        'current_status': status_filter,
+        'selected_status': status_filters,
         'search_query': search,
+        'total_topics': total_topics,
+        'total_replies': total_replies,
+        'total_users': total_users,
     }
     return render(request, 'forum/topic_list.html', context)
 

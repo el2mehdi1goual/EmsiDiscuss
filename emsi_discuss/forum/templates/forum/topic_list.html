@@ -1,356 +1,289 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
-
-{% block extra_css %}
-<style>
-    /* Hero Section */
-    .forum-hero {
-        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-hover) 100%);
-        color: white;
-        padding: 3rem 2rem;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        box-shadow: var(--shadow-md);
-    }
-    
-    .forum-hero h1 {
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-        font-family: 'Montserrat', sans-serif;
-    }
-    
-    .forum-hero p {
-        font-size: 1.1rem;
-        opacity: 0.95;
-        margin-bottom: 1.5rem;
-    }
-    
-    .hero-stats {
-        display: flex;
-        gap: 2rem;
-        margin-top: 1.5rem;
-    }
-    
-    .hero-stat {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .hero-stat-number {
-        font-size: 2rem;
-        font-weight: 800;
-        font-family: 'Montserrat', sans-serif;
-    }
-    
-    .hero-stat-label {
-        font-size: 0.9rem;
-        opacity: 0.9;
-    }
-
-    /* Tag Search Suggestions */
-    .tag-suggestions {
-        margin-top: 0.5rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.3rem;
-    }
-
-    .tag-suggestion {
-        font-size: 0.75rem;
-        padding: 0.2rem 0.6rem;
-        background: #e0e0e0;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .tag-suggestion:hover {
-        background: var(--primary-green);
-        color: white;
-    }
-
-    /* Topic Card Styles */
-    .topic-card {
-        transition: all 0.2s ease;
-    }
-
-    .topic-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-        transform: translateY(-2px);
-    }
-
-    .topic-card a {
-        color: inherit;
-    }
-
-    .topic-card a:hover {
-        color: var(--primary-green);
-    }
-</style>
-{% endblock %}
+{% block title %}Forum - EMSI_Discuss{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<div class="forum-hero">
-    <div class="d-flex justify-content-between align-items-start">
-        <div>
-            <h1 class="mb-2">EMSI_Discuss</h1>
-            <p class="mb-0">Forum de discussion académique pour les étudiants EMSI</p>
-        </div>
+<div class="hero-section mb-5">
+    <h1><i class="bi bi-chat-dots"></i> Forum Académique</h1>
+    <p>Collaborez, posez vos questions et partagez vos connaissances avec la communauté EMSI.</p>
+    <div class="hero-actions">
         {% if user.is_authenticated %}
-            <a href="{% url 'forum:topic_create' %}" class="btn btn-light">
-                <i class="bi bi-plus-circle"></i> Créer un Sujet
+            <a href="{% url 'forum:topic_create' %}" class="btn btn-primary-green btn-lg">
+                <i class="bi bi-plus-lg"></i> Créer un nouveau sujet
             </a>
         {% else %}
-            <a href="{% url 'accounts:login' %}" class="btn btn-light">
-                <i class="bi bi-box-arrow-in-right"></i> Se connecter
+            <a href="{% url 'accounts:login' %}" class="btn btn-primary-green btn-lg">
+                <i class="bi bi-box-arrow-in-right"></i> Se connecter pour participer
             </a>
         {% endif %}
     </div>
 </div>
 
-<div class="container py-2">
-    <!-- Filtres -->
-    {% if user.is_authenticated %}
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <h5 class="card-title mb-3">Filtrer les sujets</h5>
-            <form method="get" class="row g-3" id="filterForm">
-                <!-- Recherche texte -->
-                <div class="col-md-4">
-                    <label for="search" class="form-label">Recherche (titre, contenu, ou tags)</label>
-                    <input type="text" class="form-control" id="search" name="search" 
-                           placeholder="Ex: Python, Django, bug..." value="{{ search_query }}">
-                    <div class="tag-suggestions">
-                        <small class="text-muted">Tags populaires:</small>
-                        {% for tag in tags|slice:":5" %}
-                            <span class="tag-suggestion" onclick="searchByTag('{{ tag.name }}')">
-                                #{{ tag.name }}
-                            </span>
-                        {% endfor %}
+<!-- Forum Statistics -->
+<div class="row mb-4 gy-3">
+    <div class="col-md-3 col-sm-6">
+        <div class="filter-section text-center">
+            <div class="profile-stat-value">{{ total_topics }}</div>
+            <div class="profile-stat-label">Sujets</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="filter-section text-center">
+            <div class="profile-stat-value">{{ total_replies }}</div>
+            <div class="profile-stat-label">Réponses</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="filter-section text-center">
+            <div class="profile-stat-value">{{ total_users }}</div>
+            <div class="profile-stat-label">Utilisateurs</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="filter-section text-center">
+            <div class="profile-stat-value">{% widthratio topics.count total_topics 100 %}%</div>
+            <div class="profile-stat-label">Pages</div>
+        </div>
+    </div>
+</div>
+
+<div class="row gy-4">
+    <!-- Sidebar Filters -->
+    <div class="col-lg-3">
+        <!-- Search -->
+        <form method="get" class="filter-section mb-3">
+            <input type="text" name="search" class="form-control form-control" 
+                   placeholder="Rechercher..." value="{{ search_query }}"
+                   style="border: 2px solid #E0E0E0; padding: 0.8rem; border-radius: 8px;">
+        </form>
+
+        <!-- Status Filter -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="bi bi-funnel"></i> Statut
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">
+                    <input type="checkbox" class="filter-checkbox" name="status" value="open" 
+                           {% if 'open' in selected_status %}checked{% endif %}>
+                    <span><i class="bi bi-circle-fill" style="color: #3498DB; font-size: 0.6rem;"></i> Ouvert</span>
+                </label>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">
+                    <input type="checkbox" class="filter-checkbox" name="status" value="solved"
+                           {% if 'solved' in selected_status %}checked{% endif %}>
+                    <span><i class="bi bi-check-circle-fill" style="color: #27AE60; font-size: 0.8rem;"></i> Résolu</span>
+                </label>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">
+                    <input type="checkbox" class="filter-checkbox" name="status" value="locked"
+                           {% if 'locked' in selected_status %}checked{% endif %}>
+                    <span><i class="bi bi-lock-fill" style="color: #E74C3C; font-size: 0.8rem;"></i> Verrouillé</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Category Filter -->
+        {% if categories %}
+            <div class="filter-section">
+                <div class="filter-title">
+                    <i class="bi bi-bookmark"></i> Catégories
+                </div>
+                {% for category in categories %}
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <input type="checkbox" class="filter-checkbox" name="category" value="{{ category.id }}"
+                                   {% if category.id|stringformat:'s' in selected_categories %}checked{% endif %}>
+                            <span>{{ category.name }}</span>
+                            <small style="color: #999; margin-left: auto;">({{ category.topic_set.count }})</small>
+                        </label>
                     </div>
-                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
 
-                <!-- Filtre Catégorie -->
-                <div class="col-md-3">
-                    <label for="category" class="form-label">Catégorie</label>
-                    <select class="form-select" id="category" name="category" onchange="document.getElementById('filterForm').submit();">
-                        <option value="">-- Toutes --</option>
-                        {% for category in categories %}
-                            <option value="{{ category.id }}" 
-                                    {% if current_category|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
-                                {{ category.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Filtre Sous-catégorie -->
-                <div class="col-md-3">
-                    <label for="subcategory" class="form-label">Sous-catégorie</label>
-                    <select class="form-select" id="subcategory" name="subcategory" onchange="document.getElementById('filterForm').submit();">
-                        <option value="">-- Toutes --</option>
-                        {% for subcategory in subcategories %}
-                            <option value="{{ subcategory.id }}" 
-                                    {% if current_subcategory|stringformat:"s" == subcategory.id|stringformat:"s" %}selected{% endif %}>
-                                {{ subcategory.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Filtre Tag -->
-                <div class="col-md-2">
-                    <label for="tag" class="form-label">Tag</label>
-                    <select class="form-select" id="tag" name="tag" onchange="document.getElementById('filterForm').submit();">
-                        <option value="">-- Tous --</option>
-                        {% for tag in tags %}
-                            <option value="{{ tag.id }}" 
-                                    {% if current_tag|stringformat:"s" == tag.id|stringformat:"s" %}selected{% endif %}>
-                                {{ tag.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Filtre Statut -->
-                <div class="col-md-2">
-                    <label for="status" class="form-label">Statut</label>
-                    <select class="form-select" id="status" name="status" onchange="document.getElementById('filterForm').submit();">
-                        <option value="">-- Tous --</option>
-                        <option value="open" {% if current_status == 'open' %}selected{% endif %}>Ouvert</option>
-                        <option value="solved" {% if current_status == 'solved' %}selected{% endif %}>Résolu</option>
-                        <option value="locked" {% if current_status == 'locked' %}selected{% endif %}>Verrouillé</option>
-                    </select>
-                </div>
-
-                <!-- Boutons -->
-                <div class="col-12 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary-custom">
-                        <i class="bi bi-funnel"></i> Filtrer
-                    </button>
-                    <a href="{% url 'home' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-clockwise"></i> Réinitialiser
-                    </a>
-                </div>
+        <!-- Sort Options -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="bi bi-sort-down"></i> Trier par
+            </div>
+            <form method="get">
+                <select name="sort" class="form-select form-select-sm" style="border-color: #E0E0E0;">
+                    <option value="-created_at" {% if request.GET.sort == '-created_at' or not request.GET.sort %}selected{% endif %}>Plus récent</option>
+                    <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>Plus ancien</option>
+                    <option value="-updated_at" {% if request.GET.sort == '-updated_at' %}selected{% endif %}>Dernière activité</option>
+                    <option value="-views_count" {% if request.GET.sort == '-views_count' %}selected{% endif %}>Plus consulté</option>
+                </select>
             </form>
         </div>
     </div>
-    {% else %}
-    <div class="alert alert-info mb-4">
-        <i class="bi bi-info-circle"></i> Connectez-vous pour accéder aux filtres avancés.
-    </div>
-    {% endif %}
 
-    <!-- Résultats -->
-    {% if user.is_staff %}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <p class="text-muted">
-            <strong>{{ topics.count }}</strong> sujet{{ topics.count|pluralize }}
-        </p>
-    </div>
-    {% endif %}
+    <!-- Topics List -->
+    <div class="col-lg-9">
+        {% if topics %}
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="h5">
+                    <i class="bi bi-chat-left-text"></i> 
+                    {% if search_query %}
+                        Résultats pour "{{ search_query }}" ({{ topics.count }})
+                    {% else %}
+                        Tous les sujets ({{ topics.count }})
+                    {% endif %}
+                </h3>
+            </div>
 
-    {% if topics %}
-        <!-- Liste des sujets -->
-        <div class="row gap-3">
-            {% for topic in topics %}
-                <div class="col-12">
-                    <div class="card shadow-sm border-0 topic-card">
-                        <div class="card-body">
-                            <div class="row">
-                                <!-- Statuts et épingle -->
-                                <div class="col-auto">
-                                    <div class="d-flex flex-column gap-1">
-                                        {% if topic.is_pinned %}
-                                            <span class="badge bg-warning text-dark">
-                                                <i class="bi bi-pin-fill"></i> Épinglé
-                                            </span>
-                                        {% endif %}
-                                        {% if topic.is_solved %}
-                                            <span class="badge bg-success">
-                                                <i class="bi bi-check-circle"></i> Résolu
-                                            </span>
-                                        {% endif %}
-                                        {% if topic.is_locked %}
-                                            <span class="badge bg-danger">
-                                                <i class="bi bi-lock"></i> Verrouillé
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                <!-- Contenu principal -->
-                                <div class="col">
-                                    <!-- Titre (lien) -->
-                                    <h5 class="mb-2">
-                                        <a href="{% url 'forum:topic_detail' topic_id=topic.id %}" class="text-decoration-none">
-                                            {{ topic.title }}
-                                        </a>
-                                    </h5>
-
-                                    <!-- Infos auteur et catégorie -->
-                                    <div class="text-muted small mb-2">
-                                        <span>Par <strong>{{ topic.get_author_display }}</strong></span>
-                                        <span class="ms-2">dans <strong>
-                                            <a href="?subcategory={{ topic.subcategory.id }}" class="text-decoration-none text-muted">
-                                                {{ topic.subcategory }}
-                                            </a>
-                                        </strong></span>
-                                        <span class="ms-2">le {{ topic.created_at|date:"d/m/Y H:i" }}</span>
-                                    </div>
-
-                                    <!-- Tags (cliquables) -->
-                                    {% if topic.tags.all %}
-                                        <div class="mb-2">
-                                            {% for tag in topic.tags.all %}
-                                                <a href="?tag={{ tag.id }}" class="badge bg-light text-dark text-decoration-none">
-                                                    <i class="bi bi-tag"></i> {{ tag.name }}
-                                                </a>
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
-
-                                    <!-- Aperçu contenu -->
-                                    <p class="text-muted mb-0 small">
-                                        {{ topic.content|truncatewords:30 }}
-                                    </p>
-                                </div>
-
-                                <!-- Stats et actions -->
-                                <div class="col-auto text-end">
-                                    {% if user.is_staff %}
-                                    <div class="mb-2">
-                                        <div class="text-muted small">
-                                            <div><i class="bi bi-eye"></i> {{ topic.views_count }} vue{{ topic.views_count|pluralize }}</div>
-                                            <div><i class="bi bi-chat"></i> 0 réponse{{ 0|pluralize }}</div>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                    <div class="d-flex gap-1 justify-content-end">
-                                        <a href="{% url 'forum:topic_detail' topic_id=topic.id %}" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-arrow-right"></i> Voir
-                                        </a>
-                                        {% if user.is_authenticated and user == topic.author %}
-                                            <a href="{% url 'forum:topic_update' topic_id=topic.id %}" class="btn btn-sm btn-outline-secondary">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                        {% endif %}
-                                    </div>
-                                </div>
+            <div class="topics-list">
+                {% for topic in topics %}
+                    <div class="topic-card {% if topic.is_pinned %}pinned{% endif %} {% if topic.is_solved %}solved{% endif %} {% if topic.is_locked %}locked{% endif %} {% if topic.is_hidden %}hidden{% endif %}">
+                        <!-- Header -->
+                        <div class="topic-card-header">
+                            <div style="flex: 1;">
+                                <a href="{% url 'forum:topic_detail' topic_id=topic.id %}" class="topic-card-title" style="text-decoration: none; color: inherit;">
+                                    {% if topic.is_pinned %}<i class="bi bi-pin-fill" style="color: #E67E22;"></i>{% endif %}
+                                    {{ topic.title }}
+                                </a>
+                            </div>
+                            <div class="topic-card-status ms-3">
+                                {% if topic.is_pinned %}
+                                    <span class="badge badge-pinned"><i class="bi bi-pin-fill"></i> Épinglé</span>
+                                {% endif %}
+                                {% if topic.is_solved %}
+                                    <span class="badge badge-status badge-status-resolved"><i class="bi bi-check-circle"></i> Résolu</span>
+                                {% endif %}
+                                {% if topic.is_locked %}
+                                    <span class="badge badge-status badge-status-locked"><i class="bi bi-lock"></i> Verrouillé</span>
+                                {% endif %}
+                                {% if not topic.is_solved and not topic.is_locked %}
+                                    <span class="badge badge-status badge-status-open"><i class="bi bi-circle-fill"></i> Ouvert</span>
+                                {% endif %}
                             </div>
                         </div>
+
+                        <!-- Excerpt -->
+                        {% if topic.content %}
+                            <p class="topic-card-excerpt">{{ topic.content|truncatewords:30 }}</p>
+                        {% endif %}
+
+                        <!-- Tags -->
+                        {% if topic.tags.all %}
+                            <div style="margin-bottom: 1rem;">
+                                {% for tag in topic.tags.all|slice:":3" %}
+                                    <a href="{% url 'forum:topic_list' %}?tag={{ tag.id }}" class="badge badge-tag" style="text-decoration: none;">
+                                        <i class="bi bi-tag"></i> {{ tag.name }}
+                                    </a>
+                                {% endfor %}
+                                {% if topic.tags.all|length > 3 %}
+                                    <span class="badge badge-tag">+{{ topic.tags.all|length|add:'-3' }}</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Metadata -->
+                        <div class="topic-card-meta">
+                            <div class="topic-meta-item">
+                                <i class="bi bi-person"></i>
+                                <span class="topic-meta-author">{{ topic.get_author_display }}</span>
+                            </div>
+                            <div class="topic-meta-item">
+                                <i class="bi bi-calendar"></i>
+                                <span title="{{ topic.created_at|date:'d/m/Y H:i' }}">{{ topic.created_at|date:"d M Y" }}</span>
+                            </div>
+                            <div class="topic-meta-item">
+                                <i class="bi bi-chat"></i>
+                                <span>{{ topic.replies.count }} réponse{{ topic.replies.count|pluralize }}</span>
+                            </div>
+                            <div class="topic-meta-item">
+                                <i class="bi bi-eye"></i>
+                                <span>{{ topic.views_count }} vue{{ topic.views_count|pluralize }}</span>
+                            </div>
+                            {% if topic.is_solved %}
+                                <div class="topic-meta-item" style="margin-left: auto;">
+                                    <i class="bi bi-star-fill" style="color: #27AE60;"></i>
+                                    <span style="color: #27AE60;">Question résolu</span>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <div class="d-flex justify-content-center mt-4">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
                 </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <!-- Aucun sujet -->
-        <div class="alert alert-info text-center py-5">
-            <i class="bi bi-info-circle" style="font-size: 2rem;"></i>
-            <p class="mt-3 mb-0">Aucun sujet ne correspond à vos critères de recherche.</p>
-            {% if user.is_authenticated %}
-                <a href="{% url 'forum:topic_create' %}" class="btn btn-primary-custom mt-3">
-                    <i class="bi bi-plus-circle"></i> Créer le premier sujet
-                </a>
             {% endif %}
-        </div>
-    {% endif %}
+
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <h3 class="empty-state-title">Aucun sujet trouvé</h3>
+                <p class="empty-state-message">
+                    {% if search_query %}
+                        Aucun résultat pour "{{ search_query }}". Essayez une autre recherche.
+                    {% else %}
+                        Soyez le premier à créer un sujet !
+                    {% endif %}
+                </p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'forum:topic_create' %}" class="btn btn-primary-green">
+                        <i class="bi bi-plus-lg"></i> Créer un sujet
+                    </a>
+                {% else %}
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary-green">
+                        <i class="bi bi-person-plus"></i> S'inscrire pour commencer
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
 </div>
 
-<style>
-    .topic-card {
-        transition: all 0.2s ease;
-    }
-    .topic-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-        transform: translateY(-2px);
-    }
-    .topic-card a {
-        color: inherit;
-    }
-    .topic-card a:hover {
-        color: var(--primary-green);
-    }
-</style>
-
-<script>
-    function searchByTag(tagName) {
-        document.getElementById('search').value = '#' + tagName;
-        document.getElementById('filterForm').submit();
-    }
-
-    // Auto-submit form on search input (après 1 seconde d'inactivité)
-    let searchTimeout;
-    document.getElementById('search').addEventListener('keyup', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(function() {
-            document.getElementById('filterForm').submit();
-        }, 800);
-    });
-</script>
 {% endblock %}

@@ -1,10 +1,40 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
+{% block title %}{{ topic.title }} - EMSI_Discuss{% endblock %}
+
+{% block extra_css %}
+<style>
+    .topic-main-card {
+        background: var(--white);
+        border: 1px solid #E0E0E0;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        margin-bottom: 2rem;
+    }
+    
+    .topic-main-header {
+        padding: 2rem;
+        border-bottom: 1px solid #F0F0F0;
+    }
+    
+    .topic-main-body {
+        padding: 2rem;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<!-- Breadcrumb -->
+<nav class="breadcrumb" style="margin-top: 1.5rem;">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'forum:home' %}">Forum</a></li>
+        <li class="breadcrumb-item active">{{ topic.title|truncatewords:5 }}</li>
+    </ol>
+</nav>
+
+<div class="row gy-4 my-4">
     <!-- Header -->
     <div class="mb-4">
         <a href="{% url 'forum:topic_list' %}" class="text-decoration-none text-muted">

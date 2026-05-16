@@ -3,159 +3,253 @@
 
 {% block title %}Profil de {{ profile_user.username }} - EMSI_Discuss{% endblock %}
 
+{% block extra_css %}
+<style>
+    .profile-cover {
+        height: 50px;
+        background: linear-gradient(135deg, #008A45 0%, #004D25 100%);
+        border-radius: 12px 12px 0 0;
+        position: relative;
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<!-- Messages d'alerte -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-custom alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show mt-4" role="alert">
+            <div class="alert-content">
+                <i class="alert-icon bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                <span>{{ message }}</span>
             </div>
-        {% endfor %}
-    {% endif %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
 
-    <div class="row">
-        <!-- Informations principales -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <!-- Avatar -->
-                    <img src="{{ profile.get_avatar_url }}" alt="Avatar de {{ profile_user.username }}" 
-                         class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
-                    
-                    <h4>{{ profile_user.get_full_name|default:profile_user.username }}</h4>
-                    <p class="text-muted mb-2">@{{ profile_user.username }}</p>
+<div class="row gy-4 mt-2">
+    <!-- Profile Header Card -->
+    <div class="col-12">
+        <div class="profile-header">
+            <!-- Cover -->
+            <div class="profile-cover"></div>
 
-                    <!-- Badge rôle -->
-                    <div class="mb-3">
-                        {% if profile.role == 'admin' %}
-                            <span class="badge bg-danger">Administrateur</span>
-                        {% elif profile.role == 'moderator' %}
-                            <span class="badge bg-warning">Modérateur</span>
-                        {% else %}
-                            <span class="badge bg-info">Utilisateur</span>
-                        {% endif %}
-                    </div>
+            <!-- Profile Content -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem;">
+                <!-- Left: Avatar & Info -->
+                <div style="flex: 1;">
+                    <div style="display: flex; gap: 2rem;">
+                        <!-- Avatar -->
+                        <div class="profile-avatar-container" style="margin-bottom: 0; flex-shrink: 0;">
+                            <img src="{{ profile.get_avatar_url }}" alt="Avatar de {{ profile_user.username }}" 
+                                 class="profile-avatar" style="border: 6px solid white; box-shadow: 0 4px 16px rgba(0,0,0,0.15);">
+                        </div>
 
-                    <!-- Statut bannissement -->
-                    {% if profile.is_banned %}
-                        <div class="alert alert-danger py-2">
-                            <i class="bi bi-exclamation-circle"></i> Compte banni
-                            {% if profile.banned_until %}
-                                <br><small>Jusqu'au {{ profile.banned_until|date:"d/m/Y H:i" }}</small>
+                        <!-- Info -->
+                        <div style="flex: 1; padding-top: 1rem;">
+                            <h2 class="profile-name mb-2">
+                                {{ profile_user.get_full_name|default:profile_user.username }}
+                            </h2>
+                            <p class="profile-username">@{{ profile_user.username }}</p>
+
+                            <!-- Role Badge -->
+                            <div>
+                                {% if profile.role == 'admin' %}
+                                    <span class="profile-role-badge profile-role-admin">
+                                        <i class="bi bi-shield-fill"></i> Administrateur
+                                    </span>
+                                {% elif profile.role == 'moderator' %}
+                                    <span class="profile-role-badge profile-role-moderator">
+                                        <i class="bi bi-person-check-fill"></i> Modérateur
+                                    </span>
+                                {% else %}
+                                    <span class="profile-role-badge profile-role-user">
+                                        <i class="bi bi-person-fill"></i> Utilisateur
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Ban Status -->
+                            {% if profile.is_banned %}
+                                <div class="alert alert-danger mt-3 mb-0" style="border-left: 4px solid #E74C3C; padding: 0.8rem; font-size: 0.9rem;">
+                                    <i class="bi bi-exclamation-circle-fill"></i> Compte banni
+                                    {% if profile.banned_until %}
+                                        <br><small>Jusqu'au {{ profile.banned_until|date:"d/m/Y à H:i" }}</small>
+                                    {% endif %}
+                                </div>
                             {% endif %}
                         </div>
-                    {% endif %}
+                    </div>
+                </div>
 
-                    <!-- Bouton modification -->
+                <!-- Right: Action Button -->
+                <div>
                     {% if is_own_profile %}
-                        <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary-custom w-100 mb-2">
-                            <i class="bi bi-pencil"></i> Modifier mon profil
+                        <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary-green">
+                            <i class="bi bi-pencil-square"></i> Modifier le profil
                         </a>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Statistiques -->
-            <div class="card shadow-sm mt-3">
-                <div class="card-body">
-                    <h6 class="card-subtitle mb-3">Statistiques</h6>
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <h5 class="text-primary">{{ profile.reputation }}</h5>
-                                <small class="text-muted">Réputation</small>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <h5 class="text-primary">{{ profile_user.forum_posts.count|default:0 }}</h5>
-                                <small class="text-muted">Publications</small>
-                            </div>
-                        </div>
-                    </div>
-                    <hr>
-                    <small class="text-muted">Inscrit depuis le {{ profile_user.date_joined|date:"d/m/Y" }}</small>
+            <!-- Stats -->
+            <div class="profile-stats mt-4">
+                <div class="profile-stat">
+                    <div class="profile-stat-value">{{ profile.reputation }}</div>
+                    <div class="profile-stat-label">Réputation</div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Détails du profil -->
-        <div class="col-md-8">
-            <!-- Biographie -->
-            {% if profile.bio %}
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">À propos</h5>
-                        <p class="card-text">{{ profile.bio|linebreaks }}</p>
-                    </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value">{{ profile_user.forum_posts.count|default:0 }}</div>
+                    <div class="profile-stat-label">Publications</div>
                 </div>
-            {% endif %}
-
-            <!-- Informations académiques et contact -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Informations</h5>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <strong>Email:</strong><br>
-                            <a href="mailto:{{ profile_user.email }}">{{ profile_user.email }}</a>
-                        </div>
-                        {% if profile.filiere %}
-                            <div class="col-md-6 mb-3">
-                                <strong>Filière:</strong><br>
-                                {{ profile.filiere }}
-                            </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value">
+                        {% if profile_user.date_joined %}
+                            {% now "Y" as current_year %}
+                            {% if profile_user.date_joined.year == current_year %}
+                                < 1 an
+                            {% else %}
+                                {{ current_year|add:'-'|add:profile_user.date_joined.year }} ans
+                            {% endif %}
+                        {% else %}
+                            N/A
                         {% endif %}
+                    </div>
+                    <div class="profile-stat-label">Ancienneté</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value">
                         {% if profile.promotion %}
-                            <div class="col-md-6 mb-3">
-                                <strong>Promotion/Année:</strong><br>
-                                {{ profile.promotion }}
-                            </div>
-                        {% endif %}
-                        {% if profile.signature %}
-                            <div class="col-md-6 mb-3">
-                                <strong>Signature:</strong><br>
-                                {{ profile.signature }}
-                            </div>
+                            {{ profile.promotion }}
+                        {% else %}
+                            —
                         {% endif %}
                     </div>
-                </div>
-            </div>
-
-            <!-- Autres informations -->
-            {% if profile.role != 'user' or profile_user.is_staff or profile_user.is_superuser %}
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Permissions</h5>
-                        <div class="d-flex flex-wrap gap-2">
-                            {% if profile.role == 'moderator' %}
-                                <span class="badge bg-warning">Modération activée</span>
-                            {% endif %}
-                            {% if profile.role == 'admin' %}
-                                <span class="badge bg-danger">Administration activée</span>
-                            {% endif %}
-                            {% if profile_user.is_staff %}
-                                <span class="badge bg-secondary">Staff</span>
-                            {% endif %}
-                            {% if profile_user.is_superuser %}
-                                <span class="badge bg-dark">Superuser</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-
-            <!-- Activité récente (optionnel) -->
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Activité récente</h5>
-                    <p class="text-muted">
-                        <small>Dernière connexion: {{ profile_user.last_login|default:"Jamais"|date:"d/m/Y H:i" }}</small>
-                    </p>
+                    <div class="profile-stat-label">Promotion</div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Bio Section -->
+        {% if profile.bio %}
+            <div class="profile-info-section">
+                <div class="profile-info-title">À propos</div>
+                <p class="profile-bio" style="background: none; padding: 0; margin: 0; border: none;">
+                    {{ profile.bio|linebreaks }}
+                </p>
+            </div>
+        {% endif %}
+
+        <!-- Academic Info -->
+        <div class="profile-info-section">
+            <div class="profile-info-title">Informations académiques</div>
+            <div class="profile-info-item">
+                <div class="profile-info-label">Filière</div>
+                <div class="profile-info-value">
+                    {% if profile.filiere %}
+                        {{ profile.filiere }}
+                    {% else %}
+                        <span style="color: #999; font-style: italic;">Non renseignée</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="profile-info-item">
+                <div class="profile-info-label">Promotion</div>
+                <div class="profile-info-value">
+                    {% if profile.promotion %}
+                        {{ profile.promotion }}
+                    {% else %}
+                        <span style="color: #999; font-style: italic;">Non renseignée</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="profile-info-section">
+            <div class="profile-info-title">Informations de contact</div>
+            <div class="profile-info-item">
+                <div class="profile-info-label">Email</div>
+                <div class="profile-info-value">
+                    <i class="bi bi-envelope"></i> 
+                    {% if is_own_profile or user.is_staff %}
+                        {{ profile_user.email }}
+                    {% else %}
+                        <span style="color: #999;">Privé</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="profile-info-item">
+                <div class="profile-info-label">Inscrit depuis</div>
+                <div class="profile-info-value">
+                    <i class="bi bi-calendar"></i> {{ profile_user.date_joined|date:"d F Y" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Section -->
+        <div class="profile-info-section">
+            <div class="profile-info-title">Activité récente</div>
+            {% if profile_user.forum_posts.all %}
+                <div style="max-height: 400px; overflow-y: auto;">
+                    {% for topic in profile_user.forum_posts.all|slice:":10" %}
+                        <div class="profile-info-item">
+                            <a href="{% url 'forum:topic_detail' topic_id=topic.id %}" style="color: #008A45; font-weight: 500; text-decoration: none;">
+                                {{ topic.title|truncatewords:8 }}
+                            </a>
+                            <div style="color: #999; font-size: 0.85rem;">
+                                <i class="bi bi-calendar"></i> {{ topic.created_at|date:"d M Y" }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="color: #999; text-align: center; padding: 2rem 0;">
+                    <i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                    Aucune publication pour le moment
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Quick Stats Card -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="bi bi-graph-up"></i> Statistiques détaillées
+            </div>
+            <div style="padding: 1rem 0;">
+                <div style="display: flex; justify-content: space-between; padding: 0.8rem 0; border-bottom: 1px solid #F0F0F0;">
+                    <span style="color: #999;">Questions</span>
+                    <strong style="color: #008A45;">{{ profile_user.forum_posts.count|default:0 }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 0.8rem 0; border-bottom: 1px solid #F0F0F0;">
+                    <span style="color: #999;">Réputtion</span>
+                    <strong style="color: #27AE60;">+{{ profile.reputation }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 0.8rem 0;">
+                    <span style="color: #999;">Membre depuis</span>
+                    <strong>{{ profile_user.date_joined|date:"Y" }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Users (for community) -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="bi bi-people"></i> Communauté
+            </div>
+            <p style="color: #999; font-size: 0.9rem; margin: 1rem 0 0 0;">
+                Membre actif de la communauté académique de l'EMSI
+            </p>
+        </div>
+    </div>
 </div>
+
 {% endblock %}

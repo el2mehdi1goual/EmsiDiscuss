@@ -4,118 +4,184 @@
 {% block title %}Inscription - EMSI_Discuss{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-                    <h2 class="card-title text-center mb-4">Créer un compte</h2>
+<div style="min-height: auto; padding: 2rem 0;">
+    <div class="form-container" style="max-width: 600px; width: 100%;">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #008A45 0%, #004D25 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 4px 12px rgba(0,138,69,0.3);">
+                <i class="bi bi-person-plus" style="font-size: 1.8rem; color: white;"></i>
+            </div>
+            <h2 class="h3" style="font-weight: 700; color: #2C3E50;">Créer un compte</h2>
+            <p style="color: #999; font-size: 0.95rem;">Rejoignez la communauté académique EMSI</p>
+        </div>
 
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
+        <!-- Messages d'alerte -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-custom alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show mb-4" role="alert">
+                    <div class="alert-content">
+                        <i class="alert-icon bi bi-{% if message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form -->
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <!-- Section 1: Identifiant -->
+            <div style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 2px solid #F0F0F0;">
+                <h5 style="font-weight: 700; color: #2C3E50; margin-bottom: 1.5rem; font-size: 1rem;">
+                    <i class="bi bi-person" style="color: #008A45; margin-right: 0.5rem;"></i>Identifiant
+                </h5>
+
+                <div class="form-group mb-4">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">
+                        Nom d'utilisateur <span style="color: #E74C3C;">*</span>
+                    </label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div class="invalid-feedback d-block mt-2">
+                            <i class="bi bi-exclamation-circle"></i> {{ form.username.errors.0 }}
+                        </div>
                     {% endif %}
+                    <small class="form-text" style="color: #999;">Entre 3 et 30 caractères</small>
+                </div>
 
-                    <form method="post" novalidate>
-                        {% csrf_token %}
-
-                        <!-- Informations de base -->
-                        <div class="mb-3">
-                            <label for="{{ form.username.id_for_label }}" class="form-label">Nom d'utilisateur *</label>
-                            {{ form.username }}
-                            {% if form.username.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.username.errors.0 }}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                <i class="bi bi-person-vcard"></i> Prénom
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="invalid-feedback d-block mt-2">
+                                    {{ form.first_name.errors.0 }}
                                 </div>
                             {% endif %}
                         </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.first_name.id_for_label }}" class="form-label">Prénom</label>
-                                {{ form.first_name }}
-                                {% if form.first_name.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.first_name.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Nom</label>
-                                {{ form.last_name }}
-                                {% if form.last_name.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.last_name.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.email.id_for_label }}" class="form-label">Email *</label>
-                            {{ form.email }}
-                            {% if form.email.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.email.errors.0 }}
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                <i class="bi bi-person-vcard"></i> Nom
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="invalid-feedback d-block mt-2">
+                                    {{ form.last_name.errors.0 }}
                                 </div>
                             {% endif %}
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Informations académiques -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.filiere.id_for_label }}" class="form-label">Filière</label>
-                                {{ form.filiere }}
-                                {% if form.filiere.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.filiere.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.promotion.id_for_label }}" class="form-label">Promotion/Année</label>
-                                {{ form.promotion }}
-                                {% if form.promotion.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.promotion.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
+                <div class="form-group mb-4">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">
+                        <i class="bi bi-envelope"></i> Email <span style="color: #E74C3C;">*</span>
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="invalid-feedback d-block mt-2">
+                            {{ form.email.errors.0 }}
                         </div>
-
-                        <!-- Mot de passe -->
-                        <div class="mb-3">
-                            <label for="{{ form.password1.id_for_label }}" class="form-label">Mot de passe *</label>
-                            {{ form.password1 }}
-                            {% if form.password1.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.password1.errors.0 }}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.password2.id_for_label }}" class="form-label">Confirmer le mot de passe *</label>
-                            {{ form.password2 }}
-                            {% if form.password2.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.password2.errors.0 }}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <button type="submit" class="btn btn-primary-custom w-100 mb-3">S'inscrire</button>
-
-                        <p class="text-center text-muted">
-                            Vous avez déjà un compte ? <a href="{% url 'accounts:login' %}" class="text-decoration-none">Se connecter</a>
-                        </p>
-                    </form>
+                    {% endif %}
                 </div>
             </div>
+
+            <!-- Section 2: Informations académiques -->
+            <div style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 2px solid #F0F0F0;">
+                <h5 style="font-weight: 700; color: #2C3E50; margin-bottom: 1.5rem; font-size: 1rem;">
+                    <i class="bi bi-mortarboard" style="color: #008A45; margin-right: 0.5rem;"></i>Informations académiques
+                </h5>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label for="{{ form.filiere.id_for_label }}" class="form-label">
+                                Filière
+                            </label>
+                            {{ form.filiere }}
+                            {% if form.filiere.errors %}
+                                <div class="invalid-feedback d-block mt-2">
+                                    {{ form.filiere.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label for="{{ form.promotion.id_for_label }}" class="form-label">
+                                Promotion / Année
+                            </label>
+                            {{ form.promotion }}
+                            {% if form.promotion.errors %}
+                                <div class="invalid-feedback d-block mt-2">
+                                    {{ form.promotion.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Sécurité -->
+            <div style="margin-bottom: 2rem; padding-bottom: 2rem;">
+                <h5 style="font-weight: 700; color: #2C3E50; margin-bottom: 1.5rem; font-size: 1rem;">
+                    <i class="bi bi-shield-lock" style="color: #008A45; margin-right: 0.5rem;"></i>Sécurité
+                </h5>
+
+                <div class="form-group mb-4">
+                    <label for="{{ form.password1.id_for_label }}" class="form-label">
+                        Mot de passe <span style="color: #E74C3C;">*</span>
+                    </label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        <div class="invalid-feedback d-block mt-2">
+                            {{ form.password1.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <small class="form-text" style="color: #999;">
+                        <i class="bi bi-info-circle"></i> Au moins 8 caractères
+                    </small>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="{{ form.password2.id_for_label }}" class="form-label">
+                        Confirmer le mot de passe <span style="color: #E74C3C;">*</span>
+                    </label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        <div class="invalid-feedback d-block mt-2">
+                            {{ form.password2.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary-green w-100 mb-3" style="padding: 0.8rem; font-weight: 600; font-size: 1rem;">
+                <i class="bi bi-person-plus"></i> Créer mon compte
+            </button>
+        </form>
+
+        <!-- Divider -->
+        <div style="display: flex; align-items: center; gap: 1rem; margin: 2rem 0; opacity: 0.5;">
+            <div style="flex: 1; height: 1px; background: #E0E0E0;"></div>
+            <span style="color: #999; font-size: 0.85rem; white-space: nowrap;">OU</span>
+            <div style="flex: 1; height: 1px; background: #E0E0E0;"></div>
+        </div>
+
+        <!-- Login Link -->
+        <div class="text-center">
+            <p style="color: #666; font-size: 0.95rem;">
+                Vous avez déjà un compte ? 
+                <a href="{% url 'accounts:login' %}" style="color: #008A45; font-weight: 600; text-decoration: none;">Se connecter</a>
+            </p>
         </div>
     </div>
 </div>

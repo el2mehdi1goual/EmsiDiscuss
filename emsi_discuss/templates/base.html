@@ -22,30 +22,30 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navbar Premium -->
+    <!-- Premium Navbar -->
     <nav class="navbar navbar-expand-lg navbar-premium sticky-top">
         <div class="container-xl">
             <!-- Brand -->
             <a class="navbar-brand-premium" href="{% url 'home' %}">
-                <i class="bi bi-chat-dots"></i>
-                <span>EMSI_Discuss</span>
+                <i class="bi bi-chat-dots-fill"></i>
+                <span>EMSI<strong>Discuss</strong></span>
             </a>
             
             <!-- Toggler mobile -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list"></i>
             </button>
             
-            <!-- Collapse -->
+            <!-- Navbar Content -->
             <div class="collapse navbar-collapse" id="navbarCollapse">
-                <!-- Centré - Liens navigation -->
+                <!-- Center Navigation -->
                 <div class="navbar-nav mx-auto">
                     <a class="nav-link-premium" href="{% url 'forum:home' %}">
-                        <i class="bi bi-chat-left-text"></i> Forum
+                        <i class="bi bi-chat-left-text"></i> <span>Forum</span>
                     </a>
                     {% if user.is_authenticated %}
                         <a class="nav-link-premium position-relative" href="{% url 'notifications:list' %}">
-                            <i class="bi bi-bell"></i> Notifications
+                            <i class="bi bi-bell"></i> <span>Notifications</span>
                             {% if unread_notifications_count > 0 %}
                                 <span class="notification-badge">{{ unread_notifications_count }}</span>
                             {% endif %}
@@ -53,24 +53,33 @@
                     {% endif %}
                 </div>
                 
-                <!-- Droite - Actions utilisateur -->
+                <!-- Right Actions -->
                 <div class="navbar-nav ms-auto gap-2 align-items-center">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'forum:topic_create' %}" class="btn btn-primary-green btn-sm d-none d-lg-block">
-                            <i class="bi bi-plus-circle"></i> Créer un sujet
+                        <!-- Create Topic Button - Visible on lg+ -->
+                        <a href="{% url 'forum:topic_create' %}" class="btn btn-primary-green btn-sm d-none d-lg-inline-flex">
+                            <i class="bi bi-plus-lg"></i> Créer un sujet
                         </a>
-                        <a href="{% url 'accounts:profile' %}" class="nav-link-premium">
-                            <i class="bi bi-person-circle"></i>
-                        </a>
-                        <a href="{% url 'accounts:logout' %}" class="btn btn-outline-dark btn-sm">
-                            <i class="bi bi-box-arrow-right"></i> Déconnexion
-                        </a>
+                        
+                        <!-- Profile Dropdown -->
+                        <div class="nav-item dropdown">
+                            <a class="nav-link-premium dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i>
+                                <span class="d-lg-inline d-none">{{ user.first_name|default:user.username }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown" style="border: 1px solid #E0E0E0; box-shadow: 0 4px 12px rgba(0,0,0,0.12); border-radius: 8px;">
+                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person"></i> Mon profil</a></li>
+                                <li><a class="dropdown-item" href="{% url 'forum:topic_create' %}" class="d-lg-none"><i class="bi bi-plus-lg"></i> Créer un sujet</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-right"></i> Déconnexion</a></li>
+                            </ul>
+                        </div>
                     {% else %}
                         <a href="{% url 'accounts:login' %}" class="btn btn-primary-green btn-sm">
-                            <i class="bi bi-box-arrow-in-right"></i> Connexion
+                            <i class="bi bi-box-arrow-in-right"></i> <span class="d-lg-inline d-none">Connexion</span>
                         </a>
                         <a href="{% url 'accounts:register' %}" class="btn btn-outline-dark btn-sm">
-                            <i class="bi bi-person-plus"></i> S'inscrire
+                            <i class="bi bi-person-plus"></i> <span class="d-lg-inline d-none">S'inscrire</span>
                         </a>
                     {% endif %}
                 </div>
@@ -81,13 +90,13 @@
     <!-- Main Content -->
     <main class="main-content">
         <div class="container-xl">
-            <!-- Messages d'alerte -->
+            <!-- System Messages -->
             {% if messages %}
                 <div class="alerts-container mt-4">
                     {% for message in messages %}
                         <div class="alert alert-custom alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                             <div class="alert-content">
-                                <i class="alert-icon bi"></i>
+                                <i class="alert-icon bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
                                 <span>{{ message }}</span>
                             </div>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
