@@ -84,7 +84,7 @@
                                                 <a href="{% url 'forum:topic_list' %}?subcategory={{ subcategory.id }}" 
                                                    class="badge bg-light text-dark text-decoration-none">
                                                     {{ subcategory.name }}
-                                                    <small class="text-muted">(0)</small>
+                                                    <small class="text-muted">({{ subcategory.get_topics_count }})</small>
                                                 </a>
                                             {% endfor %}
                                         </div>

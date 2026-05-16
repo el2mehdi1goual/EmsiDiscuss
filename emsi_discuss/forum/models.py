@@ -59,6 +59,10 @@ class SubCategory(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+    def get_topics_count(self):
+        """Retourne le nombre de topics visibles (non cachés) dans cette subcategory"""
+        return self.topics.filter(is_hidden=False).count()
+
 
 class Tag(models.Model):
     """
