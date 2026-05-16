@@ -54,8 +54,11 @@ def report_content(request, content_type_name, object_id):
             report.save()
             
             # Créer une notification pour l'auteur du contenu signalé
-            from notifications.views import create_report_notification
+            from notifications.views import create_report_notification, create_admin_report_notification
             create_report_notification(content_object.author, report)
+            
+            # Créer une notification pour TOUS les admins/modérateurs
+            create_admin_report_notification(report)
             
             messages.success(request, 'Merci ! Votre signalement a été transmis aux modérateurs.')
             if content_type_name == 'topic':
@@ -160,6 +163,25 @@ def report_detail(request, report_id):
                 report.reviewed_at = timezone.now()
                 report.save()
                 messages.info(request, 'Signalement rejeté.')
+
+            elif action == 'delete':
+                content = report.content_object
+                resolution = f"Contenu supprimé définitivement. {notes}"
+
+                if content is None:
+                    report.mark_as_resolved(request.user, f"Contenu déjà supprimé. {notes}")
+                    messages.warning(request, 'Le contenu signalé n\'existe plus. Signalement clos.')
+                elif isinstance(content, Topic):
+                    topic_title = content.title
+                    report.mark_as_resolved(request.user, resolution)
+                    content.delete()
+                    messages.success(request, f'Le sujet « {topic_title} » a été supprimé définitivement.')
+                elif isinstance(content, Reply):
+                    report.mark_as_resolved(request.user, resolution)
+                    content.delete()
+                    messages.success(request, 'La réponse a été supprimée définitivement.')
+                else:
+                    messages.error(request, 'Type de contenu non pris en charge.')
 
         return redirect('moderation:reports_list')
 

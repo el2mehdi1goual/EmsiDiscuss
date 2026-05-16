@@ -96,8 +96,14 @@ def topic_list(request):
     Vue pour lister tous les sujets avec filtres
     Filtres disponibles : catégorie, sous-catégorie, tag, statut
     Recherche : titre, contenu, ou tags (avec ou sans #)
+    Les topics masqués ne s'affichent que pour les admins/modérateurs
     """
     topics = Topic.objects.select_related('author', 'subcategory__category').prefetch_related('tags')
+    
+    # Filtrer les topics masqués pour les utilisateurs normaux
+    is_moderator = request.user.is_staff
+    if not is_moderator:
+        topics = topics.filter(is_hidden=False)
     
     # Filtres GET
     category_ids = request.GET.getlist('category')

@@ -89,3 +89,36 @@ def create_best_answer_notification(reply_author, reply, topic):
         notification_type='best_answer',
         message=f"Votre réponse au sujet \"{topic.title}\" a été marquée comme meilleure réponse"
     )
+
+
+def create_admin_report_notification(report):
+    """
+    Crée une notification pour TOUS les admins/modérateurs
+    quand un nouveau signalement est créé
+    """
+    from django.contrib.auth.models import User
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Récupérer tous les admins et modérateurs
+        admins_moderators = User.objects.filter(is_staff=True)
+        
+        logger.info(f"Admins trouvés: {admins_moderators.count()}")
+        
+        # Créer une notification pour chaque admin/modérateur
+        for admin in admins_moderators:
+            reporter_name = report.reporter.get_full_name() or report.reporter.username
+            
+            notif = Notification.objects.create(
+                user=admin,
+                actor=report.reporter,
+                report=report,
+                notification_type='report',
+                message=f"🚩 Nouveau signalement: {report.get_reason_display()} (par {reporter_name})"
+            )
+            logger.info(f"Notification créée pour {admin.username}: {notif.id}")
+            
+    except Exception as e:
+        logger.error(f"Erreur lors de la création de notification admin: {str(e)}", exc_info=True)

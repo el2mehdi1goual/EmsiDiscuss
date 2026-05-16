@@ -42,6 +42,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Reporteur</th>
+                                <th>Signalé</th>
                                 <th>Raison</th>
                                 <th>Contenu</th>
                                 <th>Statut</th>
@@ -53,7 +54,14 @@
                             {% for report in reports %}
                                 <tr>
                                     <td>#{{ report.id }}</td>
-                                    <td>{{ report.reporter.username }}</td>
+                                    <td>{{ report.reporter.get_full_name|default:report.reporter.username }}</td>
+                                    <td>
+                                        {% if report.content_object %}
+                                            {{ report.content_object.get_author_display }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
                                     <td>{{ report.get_reason_display }}</td>
                                     <td>
                                         {% if report.content_type.model == 'topic' %}
@@ -63,7 +71,7 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <span class="badge {% if report.status == 'pending' %}badge-warning{% elif report.status == 'reviewed' %}badge-info{% elif report.status == 'resolved' %}badge-success{% else %}badge-danger{% endif %}">
+                                        <span class="badge {% if report.status == 'pending' %}bg-warning text-dark{% elif report.status == 'reviewed' %}bg-info text-dark{% elif report.status == 'resolved' %}bg-success{% else %}bg-danger{% endif %}">
                                             {{ report.get_status_display }}
                                         </span>
                                     </td>
