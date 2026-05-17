@@ -10,16 +10,6 @@
             <div class="card shadow-sm">
                 <div class="card-body p-4">
                     <h2 class="card-title mb-4">{{ action }} un Sujet</h2>
-
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-
                     <form method="post" novalidate>
                         {% csrf_token %}
 

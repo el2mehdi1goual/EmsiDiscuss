@@ -14,12 +14,16 @@ def notification_list(request):
     Liste les notifications de l'utilisateur connecté
     Affiche d'abord les non-lues, puis les lues
     """
-    notifications = Notification.objects.filter(user=request.user)
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    total_count = notifications.count()
     unread_count = notifications.filter(is_read=False).count()
-    
+    read_count = total_count - unread_count
+
     context = {
         'notifications': notifications,
+        'total_count': total_count,
         'unread_count': unread_count,
+        'read_count': read_count,
     }
     return render(request, 'notifications/notification_list.html', context)
 

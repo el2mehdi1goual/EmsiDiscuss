@@ -122,9 +122,9 @@
                 </div>
                 <div class="card-body">
                     <p>
-                        <strong>Total :</strong> {{ notifications|length }} notification(s)<br>
+                        <strong>Total :</strong> {{ total_count }} notification{{ total_count|pluralize }}<br>
                         <strong>Non lues :</strong> <span class="badge bg-danger">{{ unread_count }}</span><br>
-                        <strong>Lues :</strong> <span class="badge bg-success">{{ notifications|length|add:unread_count }}</span>
+                        <strong>Lues :</strong> <span class="badge bg-success">{{ read_count }}</span>
                     </p>
                 </div>
             </div>
