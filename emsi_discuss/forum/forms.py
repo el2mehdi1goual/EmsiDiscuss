@@ -86,8 +86,19 @@ class TopicCreateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         """Initialise le formulaire et filtre les sous-catégories selon la catégorie sélectionnée"""
         super().__init__(*args, **kwargs)
-        # Par défaut, pas de sous-catégories (elles seront chargées via JavaScript)
         self.fields['subcategory'].queryset = SubCategory.objects.none()
+
+        # À la soumission, recharger le queryset pour valider le choix AJAX
+        category_id = None
+        if self.data.get('category'):
+            try:
+                category_id = int(self.data.get('category'))
+            except (ValueError, TypeError):
+                pass
+        if category_id:
+            self.fields['subcategory'].queryset = SubCategory.objects.filter(
+                category_id=category_id
+            ).order_by('name')
 
     def clean_title(self):
         """Valide le titre"""

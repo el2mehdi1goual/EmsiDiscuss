@@ -287,7 +287,10 @@
                                             {% endif %}
 
                                             {% if user.is_authenticated and user != reply.author %}
-                                                <button class="btn btn-sm btn-outline-primary" onclick="quoteReply({{ reply.id }}, '{{ reply.author.username }}')">
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-primary btn-quote-reply"
+                                                        data-reply-id="{{ reply.id }}"
+                                                        data-author="{{ reply.author.username }}">
                                                     <i class="bi bi-quote"></i> Citer
                                                 </button>
                                                 <a href="{% url 'moderation:report_content' 'reply' reply.id %}" class="btn btn-sm btn-outline-danger" title="Signaler cette réponse">
@@ -434,24 +437,29 @@
 
 <script>
     function quoteReply(replyId, authorName) {
-        // Récupérer le contenu de la réponse à partir du DOM
-        const replyDiv = document.getElementById(`reply-${replyId}`);
+        const replyDiv = document.getElementById('reply-' + replyId);
+        if (!replyDiv) return;
+
         const contentDiv = replyDiv.querySelector('.content');
-        
-        // Afficher la section citation
         document.getElementById('quote-section').style.display = 'block';
         document.getElementById('quote-author').innerText = authorName;
         document.getElementById('quote-content').innerText = contentDiv.innerText.trim().substring(0, 100);
         document.getElementById('quoted_reply_id').value = replyId;
-        
-        // Scroll vers le formulaire
-        document.querySelector('[name="content"]').scrollIntoView({ behavior: 'smooth' });
-        document.querySelector('[name="content"]').focus();
+
+        const replyField = document.querySelector('[name="content"]');
+        replyField.scrollIntoView({ behavior: 'smooth' });
+        replyField.focus();
     }
 
     function clearQuote() {
         document.getElementById('quote-section').style.display = 'none';
         document.getElementById('quoted_reply_id').value = '';
     }
+
+    document.querySelectorAll('.btn-quote-reply').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            quoteReply(btn.dataset.replyId, btn.dataset.author);
+        });
+    });
 </script>
 {% endblock %}

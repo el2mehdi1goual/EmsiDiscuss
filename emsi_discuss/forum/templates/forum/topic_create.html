@@ -13,6 +13,14 @@
                     <form method="post" novalidate>
                         {% csrf_token %}
 
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
                         <!-- Catégorie -->
                         <div class="mb-3">
                             <label for="{{ form.category.id_for_label }}" class="form-label">
@@ -167,34 +175,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const categorySelect = document.getElementById('id_category');
     const subcategorySelect = document.getElementById('id_subcategory');
     const newSubcategoryInput = document.getElementById('id_new_subcategory');
-    
-    // Charger les sous-catégories quand la catégorie change
-    categorySelect.addEventListener('change', function() {
-        const categoryId = this.value;
-        
+    const savedSubcategoryId = '{{ form.subcategory.value|default:"" }}';
+
+    function loadSubcategories(categoryId, selectedId) {
         if (!categoryId) {
-            // Vider la liste si aucune catégorie sélectionnée
             subcategorySelect.innerHTML = '<option value="">-- Sélectionner une sous-catégorie --</option>';
             return;
         }
-        
-        // Faire une requête AJAX pour récupérer les sous-catégories
+
         fetch(`/forum/api/subcategories/${categoryId}/`)
             .then(response => response.json())
             .then(data => {
-                // Vider les options existantes
                 subcategorySelect.innerHTML = '<option value="">-- Sélectionner une sous-catégorie existante --</option>';
-                
+
                 if (data.success && data.subcategories.length > 0) {
-                    // Ajouter les sous-catégories
                     data.subcategories.forEach(subcat => {
                         const option = document.createElement('option');
                         option.value = subcat.id;
                         option.textContent = subcat.name;
+                        if (selectedId && String(subcat.id) === String(selectedId)) {
+                            option.selected = true;
+                        }
                         subcategorySelect.appendChild(option);
                     });
                 } else {
-                    // Aucune sous-catégorie existante
                     const option = document.createElement('option');
                     option.textContent = 'Aucune sous-catégorie existante';
                     option.disabled = true;
@@ -205,7 +209,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Erreur lors du chargement des sous-catégories:', error);
                 subcategorySelect.innerHTML = '<option value="">Erreur au chargement</option>';
             });
+    }
+
+    categorySelect.addEventListener('change', function() {
+        loadSubcategories(this.value, '');
     });
+
+    if (categorySelect.value) {
+        loadSubcategories(categorySelect.value, savedSubcategoryId);
+    }
     
     // Optionnel: Valider que l'utilisateur sélectionne soit une existante, soit crée une nouvelle
     const form = document.querySelector('form');
