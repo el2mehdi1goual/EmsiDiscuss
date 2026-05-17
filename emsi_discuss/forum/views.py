@@ -14,6 +14,7 @@ from django.db import transaction
 
 from .models import Category, SubCategory, Topic, Tag, Reply
 from .forms import TopicCreateForm, TopicUpdateForm
+from moderation.views import is_moderator
 
 
 def parse_tag_names(tag_names_str):
@@ -536,5 +537,31 @@ def mark_best_answer(request, reply_id):
         )
     
     messages.success(request, 'Réponse marquée comme meilleure réponse !')
+    return redirect('forum:topic_detail', topic_id=topic.id)
+
+
+@login_required(login_url='accounts:login')
+@require_http_methods(["POST"])
+def toggle_topic_pin(request, topic_id):
+    """
+    Épingle ou désépingle un sujet.
+    Réservé aux modérateurs et administrateurs.
+    """
+    if not is_moderator(request.user):
+        messages.error(request, 'Accès réservé aux modérateurs.')
+        return redirect('forum:topic_detail', topic_id=topic_id)
+
+    topic = get_object_or_404(Topic, id=topic_id)
+    topic.is_pinned = not topic.is_pinned
+    topic.save(update_fields=['is_pinned'])
+
+    if topic.is_pinned:
+        messages.success(request, f'Le sujet « {topic.title} » a été épinglé.')
+    else:
+        messages.success(request, f'Le sujet « {topic.title} » a été désépinglé.')
+
+    next_url = request.POST.get('next')
+    if next_url:
+        return redirect(next_url)
     return redirect('forum:topic_detail', topic_id=topic.id)
 

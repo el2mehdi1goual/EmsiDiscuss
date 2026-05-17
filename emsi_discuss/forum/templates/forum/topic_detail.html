@@ -89,21 +89,36 @@
                             {% endif %}
                         </div>
                         
-                        <!-- Actions auteur -->
-                        {% if user.is_authenticated and user == topic.author %}
-                            <div class="d-flex gap-1">
+                        <!-- Actions modération / auteur -->
+                        <div class="d-flex gap-1 flex-wrap justify-content-end">
+                            {% if is_moderator %}
+                                <form method="post" action="{% url 'forum:toggle_pin' topic_id=topic.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    {% if topic.is_pinned %}
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Retirer l'épingle">
+                                            <i class="bi bi-pin-angle"></i> Désépingler
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-sm btn-warning" title="Mettre en haut de la liste">
+                                            <i class="bi bi-pin-fill"></i> Épingler
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            {% endif %}
+                            {% if user.is_authenticated and user == topic.author %}
                                 <a href="{% url 'forum:topic_update' topic_id=topic.id %}" class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-pencil"></i> Modifier
                                 </a>
                                 <a href="{% url 'forum:topic_delete' topic_id=topic.id %}" class="btn btn-sm btn-outline-danger">
                                     <i class="bi bi-trash"></i> Supprimer
                                 </a>
-                            </div>
-                        {% elif user.is_authenticated %}
-                            <a href="{% url 'moderation:report_content' 'topic' topic.id %}" class="btn btn-sm btn-outline-danger" title="Signaler ce contenu">
-                                <i class="bi bi-flag"></i> Signaler
-                            </a>
-                        {% endif %}
+                            {% elif user.is_authenticated %}
+                                <a href="{% url 'moderation:report_content' 'topic' topic.id %}" class="btn btn-sm btn-outline-danger" title="Signaler ce contenu">
+                                    <i class="bi bi-flag"></i> Signaler
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
 
