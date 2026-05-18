@@ -113,79 +113,73 @@
         </div>
     </main>
 
-    <!-- Footer Premium -->
-    <footer class="footer-premium">
+    <!-- Modern Footer -->
+    <footer class="footer-modern">
         <div class="container-xl">
-            <div class="row py-5">
-                <!-- Brand & About -->
-                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0 footer-section">
+            <!-- Top Section -->
+            <div class="footer-top">
+                <!-- Brand Column -->
+                <div class="footer-column footer-brand-column">
                     <div class="footer-brand">
-                        <i class="bi bi-chat-dots"></i>
-                        <span class="footer-brand-text">EMSI_Discuss</span>
+                        <i class="bi bi-chat-dots-fill"></i>
+                        <span class="footer-brand-text">EMSI<strong>Discuss</strong></span>
                     </div>
-                    <p class="footer-text">
-                        Forum académique collaboratif pour les étudiants et alumni de l'EMSI.
+                    <p class="footer-brand-description">
+                        Plateforme académique collaborative pour les étudiants de l'EMSI.
                     </p>
+                    <div class="footer-social">
+                        <a href="#" title="Facebook" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="#" title="Twitter" aria-label="Twitter"><i class="bi bi-twitter"></i></a>
+                        <a href="#" title="LinkedIn" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" title="Instagram" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                    </div>
                 </div>
 
-                <!-- Quick Links -->
-                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0 footer-section">
-                    <h6 class="footer-title">Navigation</h6>
+                <!-- Navigation -->
+                <div class="footer-column">
+                    <h5 class="footer-column-title">Navigation</h5>
                     <ul class="footer-links">
-                        <li><a href="{% url 'home' %}">Accueil</a></li>
-                        <li><a href="{% url 'forum:home' %}">Forum</a></li>
+                        <li><a href="{% url 'home' %}"><i class="bi bi-house"></i>Accueil</a></li>
+                        <li><a href="{% url 'forum:home' %}"><i class="bi bi-chat-left-text"></i>Forum</a></li>
                         {% if user.is_authenticated %}
-                            <li><a href="{% url 'notifications:list' %}">Notifications</a></li>
+                            <li><a href="{% url 'notifications:list' %}"><i class="bi bi-bell"></i>Notifications</a></li>
                         {% endif %}
                     </ul>
                 </div>
 
-                <!-- Account Links -->
-                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0 footer-section">
-                    <h6 class="footer-title">Mon Compte</h6>
+                <!-- Account -->
+                <div class="footer-column">
+                    <h5 class="footer-column-title">Mon Compte</h5>
                     <ul class="footer-links">
                         {% if user.is_authenticated %}
-                            <li><a href="{% url 'accounts:profile' %}">Mon Profil</a></li>
-                            <li><a href="{% url 'accounts:edit_profile' %}">Paramètres</a></li>
-                            <li><a href="{% url 'accounts:logout' %}">Déconnexion</a></li>
+                            <li><a href="{% url 'accounts:profile' %}"><i class="bi bi-person"></i>Profil</a></li>
+                            <li><a href="{% url 'accounts:edit_profile' %}"><i class="bi bi-gear"></i>Paramètres</a></li>
+                            <li><a href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-left"></i>Déconnexion</a></li>
                         {% else %}
-                            <li><a href="{% url 'accounts:login' %}">Connexion</a></li>
-                            <li><a href="{% url 'accounts:register' %}">S'inscrire</a></li>
+                            <li><a href="{% url 'accounts:login' %}"><i class="bi bi-box-arrow-in-right"></i>Connexion</a></li>
+                            <li><a href="{% url 'accounts:register' %}"><i class="bi bi-person-plus"></i>S'inscrire</a></li>
                         {% endif %}
                     </ul>
                 </div>
 
                 <!-- About -->
-                <div class="col-lg-3 col-md-6 footer-section">
-                    <h6 class="footer-title">À propos</h6>
-                    <p class="footer-text">
-                        <small>
-                            École Marocaine des Sciences de l'Ingénieur<br>
-                            Rabat - Salé, Maroc
-                        </small>
+                <div class="footer-column">
+                    <h5 class="footer-column-title">À propos</h5>
+                    <p class="footer-about-text">
+                        <strong>EMSI</strong><br>
+                        École Marocaine des Sciences de l'Ingénieur<br>
+                        <span class="footer-location">Rabat - Salé, Maroc</span>
                     </p>
                 </div>
             </div>
 
-
-            <!-- Bottom -->
+            <!-- Bottom Section -->
             <div class="footer-bottom">
-                <div class="footer-copyright">
-                    <small>&copy; 2024 EMSI_Discuss. Tous droits réservés. | <a href="#" style="color: rgba(255,255,255,0.6);">Confidentialité</a></small>
-                </div>
-                <div class="footer-social">
-                    <a href="#" title="Facebook" aria-label="Facebook">
-                        <i class="bi bi-facebook"></i>
-                    </a>
-                    <a href="#" title="Twitter" aria-label="Twitter">
-                        <i class="bi bi-twitter"></i>
-                    </a>
-                    <a href="#" title="LinkedIn" aria-label="LinkedIn">
-                        <i class="bi bi-linkedin"></i>
-                    </a>
-                    <a href="#" title="Instagram" aria-label="Instagram">
-                        <i class="bi bi-instagram"></i>
-                    </a>
+                <p class="footer-copyright">&copy; 2024 EMSI_Discuss. Tous droits réservés.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Politique de Confidentialité</a>
+                    <span class="separator">•</span>
+                    <a href="#">Conditions d'Utilisation</a>
                 </div>
             </div>
         </div>
