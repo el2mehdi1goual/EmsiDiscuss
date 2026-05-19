@@ -22,43 +22,7 @@
         {% endif %}
     </div>
 
-    <!-- Statistiques -->
-    {% if user.is_staff %}
-    <div class="row mb-5">
-        <div class="col-md-3">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h3 class="text-primary">{{ topics_count }}</h3>
-                    <p class="text-muted mb-0">Sujet{{ topics_count|pluralize }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h3 class="text-primary">{{ categories.count }}</h3>
-                    <p class="text-muted mb-0">Catégorie{{ categories.count|pluralize }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h3 class="text-primary">0</h3>
-                    <p class="text-muted mb-0">Réponse{{ 0|pluralize }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h3 class="text-primary">0</h3>
-                    <p class="text-muted mb-0">Utilisateur{{ 0|pluralize }} actif{{ 0|pluralize }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
+    
 
     <!-- Catégories -->
     <div class="mb-5">
