@@ -318,7 +318,7 @@
                     {% if user.profile.banned_until %}
                         jusqu'au {{ user.profile.banned_until|date:"d/m/Y à H:i" }}
                     {% endif %}.
-                    Vous pouvez toujours lire le forum et créer des sujets.
+                    Consultation du forum en lecture seule uniquement.
                 </div>
             {% elif user.is_authenticated and not topic.is_locked %}
                 <div class="card shadow-sm mt-4">

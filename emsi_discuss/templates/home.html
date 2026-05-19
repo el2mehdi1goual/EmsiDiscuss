@@ -12,7 +12,7 @@
         et collaborez avec vos camarades et alumni.
     </p>
     <div class="hero-actions">
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated and not user_is_banned %}
             <a href="{% url 'forum:topic_create' %}" class="btn btn-primary-green btn-lg">
                 <i class="bi bi-plus-circle"></i> Créer un sujet
             </a>
@@ -36,7 +36,7 @@
     <div class="col-lg-8">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="h3 fw-bold">Dernières discussions</h2>
-            {% if user.is_authenticated %}
+            {% if user.is_authenticated and not user_is_banned %}
                 <a href="{% url 'forum:topic_create' %}" class="btn btn-sm btn-primary-green d-lg-none">
                     <i class="bi bi-plus-circle"></i> Nouveau sujet
                 </a>
@@ -173,12 +173,14 @@
                         <span>Mon profil</span>
                     </a>
                 </li>
+                {% if not user_is_banned %}
                 <li>
                     <a href="{% url 'forum:topic_create' %}" class="pinned-item">
                         <i class="bi bi-plus-circle"></i>
                         <span>Créer un sujet</span>
                     </a>
                 </li>
+                {% endif %}
             </ul>
         </div>
         {% endif %}

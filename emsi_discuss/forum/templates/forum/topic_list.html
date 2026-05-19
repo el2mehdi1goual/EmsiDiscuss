@@ -9,7 +9,7 @@
     <h1><i class="bi bi-chat-dots"></i> Forum Académique</h1>
     <p>Collaborez, posez vos questions et partagez vos connaissances avec la communauté EMSI.</p>
     <div class="hero-actions">
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated and not user_is_banned %}
             <a href="{% url 'forum:topic_create' %}" class="btn btn-primary-green btn-lg">
                 <i class="bi bi-plus-lg"></i> Créer un nouveau sujet
             </a>
@@ -282,7 +282,7 @@
                         Soyez le premier à créer un sujet !
                     {% endif %}
                 </p>
-                {% if user.is_authenticated %}
+                {% if user.is_authenticated and not user_is_banned %}
                     <a href="{% url 'forum:topic_create' %}" class="btn btn-primary-green">
                         <i class="bi bi-plus-lg"></i> Créer un sujet
                     </a>

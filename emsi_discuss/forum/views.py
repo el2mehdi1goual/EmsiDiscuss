@@ -234,6 +234,16 @@ def topic_create(request):
     Gère la création dynamique de la sous-catégorie et des tags
     Nécessite d'être connecté
     """
+    profile = request.user.profile
+    if profile.is_currently_banned():
+        messages.error(
+            request,
+            'Vous ne pouvez pas créer de sujet pendant votre bannissement. '
+            'Vous pouvez consulter le forum en lecture seule.'
+        )
+        return redirect('forum:topic_list')
+    profile.clear_expired_ban()
+
     if request.method == 'POST':
         form = TopicCreateForm(request.POST)
         if form.is_valid():
@@ -387,7 +397,7 @@ def reply_create(request, topic_id):
         messages.error(
             request,
             'Vous ne pouvez pas répondre pendant votre bannissement. '
-            'Vous pouvez encore consulter le forum et créer des sujets.'
+            'Consultation du forum en lecture seule uniquement.'
         )
         return redirect('forum:topic_detail', topic_id=topic.id)
     profile.clear_expired_ban()

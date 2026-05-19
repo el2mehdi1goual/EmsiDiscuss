@@ -11,7 +11,7 @@
         <p class="lead text-muted mb-4">
             Bienvenue ! Posez vos questions, partagez vos connaissances et discutez avec la communauté.
         </p>
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated and not user_is_banned %}
             <a href="{% url 'forum:topic_create' %}" class="btn btn-primary-custom btn-lg">
                 <i class="bi bi-plus-circle"></i> Créer un Sujet
             </a>
