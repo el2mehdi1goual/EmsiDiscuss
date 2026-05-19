@@ -41,3 +41,20 @@ class Profile(models.Model):
         if self.avatar:
             return self.avatar.url
         return '/static/images/default-avatar.png'
+
+    def is_currently_banned(self):
+        """True si le bannissement est encore actif."""
+        from django.utils import timezone
+        if not self.is_banned:
+            return False
+        if self.banned_until:
+            return self.banned_until > timezone.now()
+        return False
+
+    def clear_expired_ban(self):
+        """Lève le bannissement si la date de fin est dépassée."""
+        from django.utils import timezone
+        if self.is_banned and (not self.banned_until or self.banned_until <= timezone.now()):
+            self.is_banned = False
+            self.banned_until = None
+            self.save(update_fields=['is_banned', 'banned_until'])

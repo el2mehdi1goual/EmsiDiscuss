@@ -210,12 +210,18 @@ def topic_detail(request, topic_id):
     topic.vote_score = sum([v.value for v in topic.votes.all()])
     topic.user_vote = topic.votes.filter(user=request.user).first() if request.user.is_authenticated else None
     
+    user_is_banned = (
+        request.user.is_authenticated
+        and request.user.profile.is_currently_banned()
+    )
+
     context = {
         'page_title': f'{topic.title} - Forum',
         'topic': topic,
         'replies': replies,
         'category': topic.get_category(),
         'is_moderator': is_moderator,
+        'user_is_banned': user_is_banned,
     }
     return render(request, 'forum/topic_detail.html', context)
 
@@ -375,17 +381,16 @@ def reply_create(request, topic_id):
     """
     topic = get_object_or_404(Topic, id=topic_id)
     
-    # Vérifier que l'utilisateur n'est pas banni
-    from django.utils import timezone
-    if request.user.profile.is_banned:
-        if request.user.profile.banned_until and request.user.profile.banned_until > timezone.now():
-            messages.error(request, 'Vous avez été banni de participer au forum.')
-            return redirect('forum:topic_detail', topic_id=topic.id)
-        else:
-            # Débannir si le bannissement a expiré
-            request.user.profile.is_banned = False
-            request.user.profile.banned_until = None
-            request.user.profile.save()
+    # Bannissement : interdit de répondre uniquement (lecture et création de sujets OK)
+    profile = request.user.profile
+    if profile.is_currently_banned():
+        messages.error(
+            request,
+            'Vous ne pouvez pas répondre pendant votre bannissement. '
+            'Vous pouvez encore consulter le forum et créer des sujets.'
+        )
+        return redirect('forum:topic_detail', topic_id=topic.id)
+    profile.clear_expired_ban()
     
     # Vérifier que le sujet n'est pas verrouillé
     if topic.is_locked:

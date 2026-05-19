@@ -286,7 +286,7 @@
                                                 </a>
                                             {% endif %}
 
-                                            {% if user.is_authenticated and user != reply.author %}
+                                            {% if user.is_authenticated and user != reply.author and not user_is_banned %}
                                                 <button type="button"
                                                         class="btn btn-sm btn-outline-primary btn-quote-reply"
                                                         data-reply-id="{{ reply.id }}"
@@ -311,7 +311,16 @@
             </div>
 
             <!-- Formulaire réponse -->
-            {% if user.is_authenticated and not topic.is_locked %}
+            {% if user.is_authenticated and user_is_banned %}
+                <div class="alert alert-danger mt-4">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <strong>Compte banni</strong> — vous ne pouvez pas répondre
+                    {% if user.profile.banned_until %}
+                        jusqu'au {{ user.profile.banned_until|date:"d/m/Y à H:i" }}
+                    {% endif %}.
+                    Vous pouvez toujours lire le forum et créer des sujets.
+                </div>
+            {% elif user.is_authenticated and not topic.is_locked %}
                 <div class="card shadow-sm mt-4">
                     <div class="card-header">
                         <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Votre réponse</h5>
