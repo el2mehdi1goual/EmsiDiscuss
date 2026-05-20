@@ -107,19 +107,6 @@
                 </div>
             {% endif %}
 
-            <!-- Sort Options -->
-            <div class="filter-section">
-                <div class="filter-title">
-                    <i class="bi bi-sort-down"></i> Trier par
-                </div>
-                <select name="sort" class="form-select form-select-sm" style="border-color: #E0E0E0;">
-                    <option value="-created_at" {% if request.GET.sort == '-created_at' or not request.GET.sort %}selected{% endif %}>Plus récent</option>
-                    <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>Plus ancien</option>
-                    <option value="-updated_at" {% if request.GET.sort == '-updated_at' %}selected{% endif %}>Dernière activité</option>
-                    <option value="-views_count" {% if request.GET.sort == '-views_count' %}selected{% endif %}>Plus consulté</option>
-                </select>
-            </div>
-
             <!-- Apply Button -->
             <div class="filter-section mt-4">
                 <button type="submit" class="btn btn-primary-green w-100" style="border-radius: 8px; padding: 0.6rem; font-weight: 600;">
