@@ -100,7 +100,6 @@
                                 <input type="checkbox" class="filter-checkbox" name="category" value="{{ category.id }}"
                                        {% if category.id|stringformat:'s' in selected_categories %}checked{% endif %}>
                                 <span>{{ category.name }}</span>
-                                <small style="color: #999; margin-left: auto;">({{ category.topic_set.count }})</small>
                             </label>
                         </div>
                     {% endfor %}
