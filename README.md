@@ -2,15 +2,6 @@
 
 Bienvenue ! Ce dossier contient le projet Django complet pour **EMSI_Discuss**, un forum de discussion académique pour les étudiants EMSI.
 
-## 📖 Documentation
-
-### Architecture et Diagrammes
-- **[Diagrammes de Classes UML (PlantUML)](CLASS_DIAGRAM.md)** - Diagrammes complets de toutes les classes avec descriptions détaillées des méthodes et relations
-
-### Processus et Workflows
-- **[Flux "Meilleure Réponse"](BEST_ANSWER_WORKFLOW.md)** - Détail complet du processus quand un utilisateur clique sur le bouton "Meilleure réponse" (permissions, modifications BD, notifications, réputation, etc.)
-- **[is_solved vs is_locked](IS_SOLVED_VS_IS_LOCKED.md)** - Analyse des deux approches: faut-il verrouiller automatiquement un sujet résolu? Recommandations et bonnes pratiques
-
 ## 🏗️ Structure du Projet
 
 ```
@@ -111,9 +102,6 @@ python manage.py runserver
 
 L'application sera accessible à `http://localhost:8000`
 
-## 📊 Diagramme Global du Projet
-
-Pour une documentation complète sur l'architecture, les modèles et les relations entre classes, consultez [CLASS_DIAGRAM.md](CLASS_DIAGRAM.md).
 
 ### Applications principales
 
