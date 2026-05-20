@@ -105,6 +105,19 @@
                                         </button>
                                     {% endif %}
                                 </form>
+                                <form method="post" action="{% url 'forum:toggle_lock' topic_id=topic.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    {% if topic.is_locked %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Déverrouiller">
+                                            <i class="bi bi-unlock"></i> Déverrouiller
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Verrouiller">
+                                            <i class="bi bi-lock"></i> Verrouiller
+                                        </button>
+                                    {% endif %}
+                                </form>
                             {% endif %}
                             {% if user.is_authenticated and user == topic.author %}
                                 <a href="{% url 'forum:topic_update' topic_id=topic.id %}" class="btn btn-sm btn-outline-secondary">

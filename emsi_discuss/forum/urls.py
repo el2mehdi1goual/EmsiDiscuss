@@ -19,6 +19,7 @@ urlpatterns = [
     path('topic/<int:topic_id>/edit/', views.topic_update, name='topic_update'),
     path('topic/<int:topic_id>/delete/', views.topic_delete, name='topic_delete'),
     path('topic/<int:topic_id>/toggle-pin/', views.toggle_topic_pin, name='toggle_pin'),
+    path('topic/<int:topic_id>/toggle-lock/', views.toggle_topic_lock, name='toggle_lock'),
     
     # Replies - CRUD
     path('topic/<int:topic_id>/reply/', views.reply_create, name='reply_create'),

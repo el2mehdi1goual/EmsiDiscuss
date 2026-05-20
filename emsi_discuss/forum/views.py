@@ -580,3 +580,29 @@ def toggle_topic_pin(request, topic_id):
         return redirect(next_url)
     return redirect('forum:topic_detail', topic_id=topic.id)
 
+
+@login_required(login_url='accounts:login')
+@require_http_methods(["POST"])
+def toggle_topic_lock(request, topic_id):
+    """
+    Verrouille ou déverrouille un sujet.
+    Réservé aux modérateurs et administrateurs.
+    """
+    if not is_moderator(request.user):
+        messages.error(request, 'Accès réservé aux modérateurs.')
+        return redirect('forum:topic_detail', topic_id=topic_id)
+
+    topic = get_object_or_404(Topic, id=topic_id)
+    topic.is_locked = not topic.is_locked
+    topic.save(update_fields=['is_locked'])
+
+    if topic.is_locked:
+        messages.success(request, f'Le sujet « {topic.title} » a été verrouillé.')
+    else:
+        messages.success(request, f'Le sujet « {topic.title} » a été déverrouillé.')
+
+    next_url = request.POST.get('next')
+    if next_url:
+        return redirect(next_url)
+    return redirect('forum:topic_detail', topic_id=topic.id)
+
